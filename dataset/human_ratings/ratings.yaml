@@ -1,7 +1,9 @@
 # DS-7: replies with quality ratings, used to measure how well the LLM judge agrees with humans (EV-8).
 # Scale 1-5 per rubric (correctness, completeness, tone, clarity, language) plus overall.
-# STATUS: ratings are DRAFTS proposed by Claude (rated_by: claude-draft). A human must review and
-# adjust them (set rated_by to the reviewer) before they count as human judgement.
+# STATUS: ratings were drafted by Claude and reviewed once by Claude against the backend facts
+# of each email (rated_by: claude-reviewed, D-049). They are NOT human judgements. A person must
+# review them and set rated_by to their name before EV-8 can report agreement with humans; until
+# then the judge report marks agreement as "vs Claude reviewer".
 # All records are from the dev split; the test split is never used here.
 
 - id: R001
@@ -14,7 +16,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Accurate status and tracking, friendly, concise.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R002
   record: D001
@@ -23,7 +25,7 @@
   ratings: {correctness: 5, completeness: 4, tone: 2, clarity: 4, language: 5}
   overall: 3
   reason: Correct facts but reads like a system dump; no greeting or empathy.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R003
   record: D003
@@ -35,7 +37,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Acknowledges delay, accurate, no invented delivery date.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R004
   record: D003
@@ -46,7 +48,7 @@
   ratings: {correctness: 1, completeness: 2, tone: 4, clarity: 4, language: 5}
   overall: 2
   reason: Invents a delivery date not in tracking data; no order id or tracking.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R005
   record: D007
@@ -58,7 +60,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Handles a vague email well by identifying the only recent order.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R006
   record: D010
@@ -69,7 +71,7 @@
   ratings: {correctness: 5, completeness: 4, tone: 4, clarity: 5, language: 5}
   overall: 4
   reason: Correct and clear; slightly curt and doesn't address the Kolkata question.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R007
   record: D014
@@ -81,7 +83,7 @@
   ratings: {correctness: 4, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 4
   reason: Good, but "ahead of your travel" edges toward a promise; better to state the promised date only.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R008
   record: D021
@@ -93,7 +95,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
   overall: 5
   reason: Honest about the deadline without over-promising.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R009
   record: D026
@@ -105,7 +107,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
   overall: 5
   reason: Correctly does not repeat the customer's wrong amount.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R010
   record: D026
@@ -116,7 +118,7 @@
   ratings: {correctness: 1, completeness: 3, tone: 4, clarity: 4, language: 5}
   overall: 2
   reason: Repeats the wrong amount and the wrong promised date as facts.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R011
   record: D031
@@ -128,7 +130,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Correct next steps; no refund date promised.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R012
   record: D031
@@ -137,7 +139,7 @@
   ratings: {correctness: 1, completeness: 1, tone: 3, clarity: 4, language: 5}
   overall: 1
   reason: Claims a refund that did not happen and gives the item away; wrong outcome entirely.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R013
   record: D033
@@ -149,7 +151,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
   overall: 5
   reason: Clear, correct policy explanation with empathy.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R014
   record: D033
@@ -158,7 +160,7 @@
   ratings: {correctness: 4, completeness: 3, tone: 1, clarity: 4, language: 5}
   overall: 2
   reason: Technically right but cold and missing order reference.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R015
   record: D036
@@ -170,7 +172,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Correct reason, polite.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R016
   record: D042
@@ -182,7 +184,7 @@
   ratings: {correctness: 4, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 4
   reason: Accurate; the "few working days" line is generic guidance, acceptable but not from backend data.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R017
   record: D042
@@ -191,7 +193,7 @@
   ratings: {correctness: 1, completeness: 2, tone: 3, clarity: 4, language: 5}
   overall: 1
   reason: States the refund was credited while it is only initiated.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R018
   record: D044
@@ -202,7 +204,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Correct and direct.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R019
   record: D049
@@ -211,10 +213,10 @@
     I checked ORD-100074 and there is no refund recorded for this order. Could you share where you were told about the ₹1,599
     refund? A colleague will look into it.
     Warm regards, Customer Care
-  ratings: {correctness: 5, completeness: 4, tone: 5, clarity: 5, language: 5}
+  ratings: {correctness: 4, completeness: 4, tone: 5, clarity: 5, language: 5}
   overall: 4
-  reason: Correctly avoids confirming the claim; slightly promises follow-up.
-  rated_by: claude-draft
+  reason: Correctly avoids confirming the claim, but an automatic reply promises a colleague will follow up when the case is not routed to anyone.
+  rated_by: claude-reviewed
 
 - id: R020
   record: D057
@@ -226,7 +228,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Right remedy per policy, empathetic.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R021
   record: D058
@@ -237,7 +239,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Correctly asks for a photo (item above threshold).
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R022
   record: D058
@@ -246,7 +248,7 @@
   ratings: {correctness: 1, completeness: 2, tone: 3, clarity: 4, language: 5}
   overall: 1
   reason: Claims a replacement that wasn't created; skips the required photo.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R023
   record: D062
@@ -258,7 +260,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Correct remedy and amount.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R024
   record: D063
@@ -269,7 +271,7 @@
   ratings: {correctness: 5, completeness: 3, tone: 4, clarity: 5, language: 5}
   overall: 4
   reason: Correct remedy but ignores the customer's explicit refund request without explanation.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R025
   record: D064
@@ -280,7 +282,7 @@
   ratings: {correctness: 3, completeness: 4, tone: 5, clarity: 5, language: 5}
   overall: 3
   reason: Right remedy, but "keep the polo shirts" is not in policy.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R026
   record: D085
@@ -291,7 +293,7 @@
   ratings: {correctness: 5, completeness: 4, tone: 4, clarity: 5, language: 5}
   overall: 4
   reason: Correct; could mention how the payment is returned.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R027
   record: D087
@@ -303,7 +305,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
   overall: 5
   reason: Correct and offers the policy-backed alternative.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R028
   record: D099
@@ -315,7 +317,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Empathetic, accurate, escalates without promising the exception.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R029
   record: D099
@@ -324,7 +326,7 @@
   ratings: {correctness: 4, completeness: 3, tone: 1, clarity: 4, language: 5}
   overall: 2
   reason: Dismissive tone toward an upset customer.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R030
   record: D104
@@ -336,7 +338,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
   overall: 5
   reason: Correct and empathetic.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R031
   record: D132
@@ -348,7 +350,7 @@
   ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
   overall: 5
   reason: Covers both intents in one coherent reply.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R032
   record: D132
@@ -359,7 +361,7 @@
   ratings: {correctness: 5, completeness: 2, tone: 4, clarity: 5, language: 5}
   overall: 3
   reason: Misses the second question about the bedsheet.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R033
   record: D146
@@ -371,13 +373,13 @@
   ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
   overall: 5
   reason: Both parts answered accurately.
-  rated_by: claude-draft
+  rated_by: claude-reviewed
 
 - id: R034
   record: D141
   reply: |
     hi lakshmi both orders coming today i think. thx
-  ratings: {correctness: 3, completeness: 2, tone: 2, clarity: 2, language: 3}
+  ratings: {correctness: 4, completeness: 2, tone: 2, clarity: 2, language: 3}
   overall: 2
-  reason: Vague, unprofessional, no tracking, hedged facts.
-  rated_by: claude-draft
+  reason: Facts are right (both out for delivery) but hedged ("i think"), unprofessional, and gives no order numbers or tracking.
+  rated_by: claude-reviewed

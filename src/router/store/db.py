@@ -44,6 +44,11 @@ CREATE TRIGGER IF NOT EXISTS events_no_update BEFORE UPDATE ON events
     BEGIN SELECT RAISE(ABORT, 'events are append-only'); END;
 CREATE TRIGGER IF NOT EXISTS events_no_delete BEFORE DELETE ON events
     BEGIN SELECT RAISE(ABORT, 'events are append-only'); END;
+CREATE TABLE IF NOT EXISTS drafts (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT NOT NULL, text TEXT NOT NULL, gate TEXT NOT NULL,
+    status TEXT NOT NULL, created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS drafts_case ON drafts(case_id, seq);
 CREATE TABLE IF NOT EXISTS actions (
     key TEXT PRIMARY KEY, case_id TEXT NOT NULL, type TEXT NOT NULL, order_id TEXT NOT NULL, status TEXT NOT NULL,
     attempts INTEGER NOT NULL DEFAULT 0, request TEXT, response TEXT, error TEXT, updated_at TEXT NOT NULL
@@ -122,6 +127,43 @@ class Store:
         rows = self._conn.execute("SELECT * FROM emails WHERE case_id=? ORDER BY received_at, seq", (case_id,)).fetchall()
         return [_email(r) for r in rows]
 
+    def set_email_outcome(self, message_id: str, outcome: str, case_id: str) -> None:
+        with self.tx() as c:
+            c.execute("UPDATE emails SET outcome=?, case_id=? WHERE message_id=? AND outcome IN ('new_case','follow_up')",
+                      (outcome, case_id, message_id))
+
+    # ------------------------------------------------------------------ actions (FR-24)
+
+    def get_action(self, key: str) -> dict[str, Any] | None:
+        row = self._conn.execute("SELECT * FROM actions WHERE key=?", (key,)).fetchone()
+        return _action(row) if row else None
+
+    def save_action(self, *, key: str, case_id: str, type: str, order_id: str, status: str, attempts: int,
+                    request: dict[str, Any], response: Any, error: str | None, at: datetime) -> None:
+        with self.tx() as c:
+            c.execute("INSERT INTO actions (key, case_id, type, order_id, status, attempts, request, response, error,"
+                      " updated_at) VALUES (?,?,?,?,?,?,?,?,?,?) ON CONFLICT(key) DO UPDATE SET status=excluded.status,"
+                      " attempts=actions.attempts+excluded.attempts, response=excluded.response, error=excluded.error,"
+                      " updated_at=excluded.updated_at",
+                      (key, case_id, type, order_id, status, attempts, json.dumps(mask_obj(request)),
+                       json.dumps(mask_obj(response), default=str), error, at.isoformat()))
+
+    def case_actions(self, case_id: str) -> list[dict[str, Any]]:
+        rows = self._conn.execute("SELECT * FROM actions WHERE case_id=? ORDER BY updated_at, key", (case_id,))
+        return [_action(r) for r in rows.fetchall()]
+
+    # ------------------------------------------------------------------ drafts (FR-20, FR-34)
+
+    def add_draft(self, case_id: str, text: str, gate: dict[str, Any], status: str, at: datetime) -> int:
+        with self.tx() as c:
+            cur = c.execute("INSERT INTO drafts (case_id, text, gate, status, created_at) VALUES (?,?,?,?,?)",
+                            (case_id, mask_obj(text), json.dumps(gate), status, at.isoformat()))
+            return int(cur.lastrowid)
+
+    def drafts(self, case_id: str) -> list[dict[str, Any]]:
+        rows = self._conn.execute("SELECT * FROM drafts WHERE case_id=? ORDER BY seq", (case_id,)).fetchall()
+        return [{**dict(r), "gate": json.loads(r["gate"])} for r in rows]
+
     # ------------------------------------------------------------------ cases
 
     def create_case(self, case_id: str, *, thread_root: str, sender: str, at: datetime, stage: str = "received") -> None:
@@ -178,6 +220,13 @@ def _email(row: sqlite3.Row) -> EmailRow:
     return EmailRow(row["seq"], row["message_id"], row["case_id"], row["sender"],
                     datetime.fromisoformat(row["received_at"]), row["subject"], json.loads(row["order_ids"] or "[]"),
                     row["outcome"])
+
+
+def _action(row: sqlite3.Row) -> dict[str, Any]:
+    d = dict(row)
+    d["request"] = json.loads(d["request"]) if d["request"] else None
+    d["response"] = json.loads(d["response"]) if d["response"] else None
+    return d
 
 
 def _case(row: sqlite3.Row) -> dict[str, Any]:

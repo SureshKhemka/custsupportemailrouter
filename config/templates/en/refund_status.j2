@@ -1,0 +1,9 @@
+{%- if state == "none" -%}
+I checked order {{ o.order_id }} and there's no refund recorded for it at the moment.
+{%- elif state == "initiated" -%}
+The refund of {{ amount }} for order {{ o.order_id }} has been initiated to your original payment method.
+{%- elif state == "processed" -%}
+The refund of {{ amount }} for order {{ o.order_id }} has been processed to your original payment method.
+{%- elif state == "failed" -%}
+The refund for order {{ o.order_id }} could not be completed. A member of our team will look into it.
+{%- endif -%}

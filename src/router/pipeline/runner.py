@@ -7,6 +7,7 @@ Every step and backend call is written to the append-only audit log (FR-39).
 from __future__ import annotations
 
 import json
+import traceback
 import uuid
 from collections import Counter
 from dataclasses import asdict, dataclass, field
@@ -16,13 +17,17 @@ from pathlib import Path
 import httpx
 from pydantic import ValidationError
 
-from router.clients import Backends, CallRecord
+from router.clients import Backends, CallRecord, ServiceError
 from router.config import LoadedConfig
 from router.core.clock import Clock
 from router.core.ids import step_id
 from router.llm import LLMCall
 from router.pipeline.identify import Identity, identify
+from router.pipeline.actions import ActionResult, run_actions
+from router.pipeline.decide_step import Decision, decide
+from router.pipeline.deliver import Outcome, deliver, gate_facts
 from router.pipeline.intake import IntakeResult, intake
+from router.pipeline.reply import Composer
 from router.pipeline.understanding import Understander, Understanding
 from router.schemas.email import InboundEmail
 from router.store.db import Store
@@ -37,6 +42,9 @@ class CaseContext:
     source: str | None = None
     understanding: Understanding | None = None
     identity: Identity | None = None
+    decision: Decision | None = None
+    actions: list[ActionResult] = field(default_factory=list)
+    outcome: Outcome | None = None
     stage: str = "received"
     step_seq: int = 0
 
@@ -60,6 +68,7 @@ class Router:
         `http_clients` swaps the network transport per service (tests use in-process mock apps)."""
         self.loaded, self.cfg, self.store, self.clock = loaded, loaded.settings, store, clock
         self.understander = understander
+        self.composer = Composer(self.cfg)
         self._current: CaseContext | None = None
         self.backends = Backends.from_config(self.cfg, on_call=self._record_call, http_clients=http_clients,
                                              sleep=(lambda _s: None) if http_clients else None)
@@ -99,12 +108,19 @@ class Router:
         try:
             return self._process(ctx)
         except Exception as exc:
+            # A backend outage or a bug must never drop an email silently (NF-4, EV-11): the case goes
+            # to a human with the error recorded, and nothing is sent.
             self.store.append_event(ctx.case_id, ctx.next_step("error"), "processing_error",
-                                    {"error": f"{type(exc).__name__}: {exc}", "stage": ctx.stage}, now)
-            if self.store.get_case(ctx.case_id):
-                self.store.update_case(ctx.case_id, now, stage="error")
-            ctx.stage = "error"
-            raise
+                                    {"error": f"{type(exc).__name__}: {exc}", "stage": ctx.stage,
+                                     "traceback": traceback.format_exc()[-4000:]}, now)
+            if not self.store.get_case(ctx.case_id):
+                self.store.create_case(ctx.case_id, thread_root=ctx.intake.message_id, sender=email.sender, at=now)
+            flag = "backend_unavailable" if isinstance(exc, ServiceError) else "processing_error"
+            self.store.update_case(ctx.case_id, now, status="open", stage="awaiting_human", disposition="routed",
+                                   mode="ROUTE", queue="general", flags=[flag])
+            ctx.stage = "routed"
+            ctx.outcome = Outcome("ROUTE", "routed", "general", False, (flag,), False, None)
+            return ctx
         finally:
             self._current = None
 
@@ -155,6 +171,59 @@ class Router:
                                customer_id=ident.customer.customer_id if ident.customer else None,
                                primary_order_id=ident.primary_order_id)
         ctx.stage = "identified"
+        if u is None:  # no understanding step wired: stop after identity
+            return ctx
+        return self._decide_and_act(ctx)
+
+    def _decide_and_act(self, ctx: CaseContext) -> CaseContext:
+        email, now, u, ident = ctx.email, ctx.now, ctx.understanding, ctx.identity
+        # FR-3: a near-duplicate is merged only when it asks for the same things as the earlier case.
+        target = self.store.get_case(ctx.intake.near_duplicate_of) if ctx.intake.near_duplicate_of else None
+        merged = bool(target and not u.failed and set(target["intents"] or []) == set(u.intents))
+        d = decide(u, ident, email, self.backends, self.cfg, now, merged=merged)
+        ctx.decision = d
+        self.store.append_event(ctx.case_id, ctx.next_step("decide"), "decision", {
+            "mode": d.handling.mode, "disposition": d.handling.disposition, "queue": d.handling.queue,
+            "priority": d.handling.priority, "flags": list(d.handling.flags), "escalated": d.handling.escalated,
+            "signals": sorted(d.signals), "operating_mode": d.delivery.operating_mode,
+            "delivery_mode": d.delivery.mode, "run_actions_for": list(d.delivery.run_actions_for),
+            "hold_actions_for": list(d.delivery.hold_actions_for),
+            "intents": [{"intent": i.intent, "order_id": i.order_id, "conditions": sorted(i.conditions),
+                         "decision": i.decision, "lines": i.lines, "action": i.action} for i in d.intents],
+            "sla_due": d.sla_due.isoformat() if d.sla_due else None}, now)
+        if merged:
+            self.store.set_email_outcome(ctx.intake.message_id, "merged", target["case_id"])
+            self.store.update_case(ctx.case_id, now, status="closed", stage="closed", disposition="merged",
+                                   mode="CLOSE", intents=list(u.intents), flags=[f"merged_into:{target['case_id']}"])
+            self.store.append_event(target["case_id"], None, "merged_email",
+                                    {"message_id": ctx.intake.message_id, "from_case": ctx.case_id}, now)
+            ctx.stage = "merged"
+            return ctx
+        if d.handling.disposition == "closed_spam":
+            self.store.update_case(ctx.case_id, now, status="closed", stage="closed", disposition="closed_spam",
+                                   mode="CLOSE", intents=list(u.intents))
+            ctx.stage = "closed_spam"
+            return ctx
+
+        actions = run_actions(ctx.case_id, d.intents, d.delivery.run_actions_for, d.delivery.shadow,
+                              self.backends, self.store, now)
+        ctx.actions = actions
+        failed = any(a.status == "failed" for a in actions)
+        self.store.append_event(ctx.case_id, ctx.next_step("act"), "actions",
+                                {"actions": [vars(a) for a in actions], "any_failed": failed}, now)
+        reply = self.composer.compose(d, u, ident, actions, self.backends, now)
+        facts = gate_facts(u, ident, d, actions, email, reply.text, self.backends, self.cfg, now) if reply else None
+        out, event = deliver(ctx.case_id, email, d, reply, facts, failed, self.backends, self.store, self.cfg, now)
+        ctx.outcome = out
+        self.store.append_event(ctx.case_id, ctx.next_step("deliver"), "reply", {**event, "sent": out.sent,
+                                "final_mode": out.mode, "final_disposition": out.disposition}, now)
+        closed = out.disposition in {"auto_replied", "identity_reply", "clarification_requested"} and out.sent
+        self.store.update_case(ctx.case_id, now, status="closed" if closed else "open",
+                               stage="closed" if closed else "awaiting_human", disposition=out.disposition,
+                               mode=out.mode, queue=out.queue, priority=int(out.priority),
+                               sla_due=d.sla_due.isoformat() if d.sla_due else None, language=u.language,
+                               intents=list(u.intents), flags=list(out.flags))
+        ctx.stage = out.disposition
         return ctx
 
     # ------------------------------------------------------------------ helpers

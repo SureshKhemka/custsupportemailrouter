@@ -1,0 +1,18 @@
+{%- set items = lines_text or o.items -%}
+{%- if action == "succeeded" -%}
+We've created a return for {{ items }} from order {{ o.order_id }}. Our courier will contact you to arrange pickup. Once the item is received and checked, the refund goes to your original payment method.
+{%- elif action == "failed" -%}
+We couldn't set up the return for {{ items }} from order {{ o.order_id }} automatically. A colleague will arrange it and confirm with you.
+{%- elif action == "held" and reason == "eligible" -%}
+We can arrange a return for {{ items }} from order {{ o.order_id }}. Once the item is picked up and checked, the refund goes to your original payment method.
+{%- elif reason == "outside_window" -%}
+Order {{ o.order_id }} was delivered on {{ o.delivered }}. Our return window is {{ policy.returns.window_days }} days from delivery, so this return falls outside it. I'm sorry we can't accept it.
+{%- elif reason == "non_returnable" -%}
+{{ items | capitalize }} from order {{ o.order_id }} can't be returned under our returns policy, because {{ category }} items are not returnable once delivered. I'm sorry for the inconvenience.
+{%- elif reason == "not_delivered" -%}
+Order {{ o.order_id }} hasn't been delivered yet, so a return can't be started. Once it arrives, you can request a return within {{ policy.returns.window_days }} days of delivery.
+{%- elif reason == "already_returned" -%}
+A return is already on record for order {{ o.order_id }}, so there's no need to request another one.
+{%- elif reason == "nothing_left_to_return" -%}
+The items you mentioned from order {{ o.order_id }} have already been returned.
+{%- endif -%}

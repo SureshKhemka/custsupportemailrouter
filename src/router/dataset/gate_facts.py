@@ -19,6 +19,9 @@ def facts_for_record(lr: LoadedRecord, seed: SeedView, cfg: Settings,
     referenced = [seed.orders[i.order_id] for i in label.intents if i.order_id in seed.orders]
     verified = ownership(customer, referenced) == "owner"
     orders = list({o.order_id: o for o in referenced}.values()) if verified else []
+    if label.order == "ambiguous" and customer is not None:  # a clarifying question lists the sender's own orders
+        orders += seed.recent_orders(customer.customer_id, lr.email.received_at,
+                                     cfg.handling.ambiguous_order.candidate_window_days)
     ids = [o.order_id for o in orders]
     if recorded_actions is None:  # default: the record's expected actions, all succeeded
         actions = [ActionRecord(a.type, a.order_id, "succeeded", a.amount) for a in label.actions]

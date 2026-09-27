@@ -9,18 +9,8 @@ from router.core.clock import FixedClock
 from router.dataset.loader import load_records, reference_now
 from router.decide.signals import ToneSignals, compute_signals
 from router.pipeline.runner import Router
-from router.pipeline.understanding import Understanding
+from router.evals.oracle import label_oracle
 from router.store.db import Store
-
-
-def label_oracle(records):
-    """Understanding taken from the labels: tests identity without any LLM."""
-    by_mid: dict[str, Understanding] = {}
-    for lr in records:
-        l = lr.record.label
-        hints = tuple(h for i in l.intents for h in i.entities.items)
-        by_mid.setdefault(lr.email.message_id, Understanding(tuple(i.intent for i in l.intents), hints, l.language))
-    return lambda email: by_mid[email.message_id]
 
 
 def test_intake_and_identity_match_labels(pinned_config, mock_clients, mocks_reset) -> None:

@@ -234,8 +234,8 @@ def test_timeout_after_commit_then_retry_returns_same_refund(cfg) -> None:
     body = {"order_id": oid, "amount": 5499, "reason": "damaged"}
     first = c.post("/refunds", json=body, headers={"Idempotency-Key": "case-7:refund"})
     retry = c.post("/refunds", json=body, headers={"Idempotency-Key": "case-7:refund"})
-    assert first.status_code == 201 and retry.status_code == 200
-    assert retry.json()["refund_id"] == first.json()["refund_id"]
+    assert first.status_code == 504  # the caller never learns it succeeded
+    assert retry.status_code == 200 and retry.headers["Idempotent-Replayed"] == "true"
     assert sum(r["idempotency_key"] == "case-7:refund" for r in c.get("/refunds", params={"order_id": oid}).json()) == 1
 
 

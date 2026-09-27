@@ -94,7 +94,7 @@ def dataset_check(config: OverlayOpt = None, split: SplitOpt = None) -> None:
         raise typer.Exit(code=1)
     typer.echo("Labels consistent with seed data, policy and config.")
     if st.get("ratings_pending_human_review"):
-        err.print(f"[yellow]note:[/] {st['ratings_pending_human_review']} DS-7 rating(s) are Claude drafts awaiting human review.")
+        err.print(f"[yellow]note:[/] {st['ratings_pending_human_review']} DS-7 rating(s) are rated by Claude, not yet reviewed by a person (D-049).")
 
 
 @dataset_app.command("inbox")
@@ -231,6 +231,33 @@ def eval_understand(
     for k, t in report["targets"].items():
         status = "[green]PASS[/]" if t["met"] else "[red]FAIL[/]"
         err.print(f"{status} {k} = {report['headline'][k]} (target {t['op']} {t['target']})")
+    typer.echo(f"Report: {out / 'report.md'}")
+
+
+@eval_app.command("e2e")
+def eval_e2e(
+    config: OverlayOpt = None,
+    split: Annotated[str, typer.Option(help="dev (default) or test.")] = "dev",
+    understanding: Annotated[str, typer.Option(help="oracle (labels, no LLM), replay (recorded LLM) or live.")] = "oracle",
+    ids: Annotated[str | None, typer.Option(help="Comma-separated record ids (their whole groups run).")] = None,
+) -> None:
+    """End-to-end eval: dispositions, actions, hard gates, automation (9.2, 9.5)."""
+    import time
+
+    from router.evals.e2e import run_e2e_eval
+
+    loaded = _load(config)
+    if loaded.settings.routing.operating_mode.default != "live":
+        err.print("[yellow]note:[/] labels assume live mode; add an overlay with routing.operating_mode.default: live")
+    started = time.monotonic()
+    out = run_e2e_eval(loaded, split, understanding, ids=ids.split(",") if ids else None,
+                       progress=lambda d, t: err.print(f"  {d}/{t} emails ({time.monotonic() - started:.0f}s)")
+                       if d == t or d % 50 < 3 else None)
+    report = json.loads((out / "report.json").read_text())
+    for k, v in report["hard_gates"].items():
+        err.print(f"{'[green]PASS[/]' if v['passed'] else '[red]FAIL[/]'} {k}" + ("" if v["passed"] else f": {v['violations'][:3]}"))
+    for k, t in report["targets"].items():
+        err.print(f"{'[green]PASS[/]' if t['met'] else '[red]FAIL[/]'} {k} = {report['headline'][k]} (target {t['op']} {t['target']})")
     typer.echo(f"Report: {out / 'report.md'}")
 
 

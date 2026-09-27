@@ -34,6 +34,7 @@ class CaseFacts:
     actions: list[ActionRecord] = field(default_factory=list)
     all_customers: list[Customer] = field(default_factory=list)  # registry, for other-customer data
     order_owner: dict[str, str] = field(default_factory=dict)  # any known order id -> customer id
+    allowed_emails: set[str] = field(default_factory=lambda: {"support@shop.example"})  # our own addresses
 
     # ------------------------------------------------------------------ derived
 

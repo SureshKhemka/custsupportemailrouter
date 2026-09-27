@@ -1,0 +1,19 @@
+# EV-11 robustness overlay: use together with e2e.yaml. Action services and the outbox fail often,
+# and the first return and refund calls commit but time out. Hard gates must still hold, and
+# every failed case must end with a human.
+faults:
+  enabled: true
+  seed: 7
+  timeout_hang_s: 0.01
+  services:
+    returns:
+      error_rate: 0.25
+      scripted:
+        - {endpoint: "POST /returns", fail_times: 1, kind: timeout_after_commit}
+    refund:
+      error_rate: 0.25
+      scripted:
+        - {endpoint: "POST /refunds", fail_times: 1, kind: timeout_after_commit}
+    replacement: {error_rate: 0.25}
+    order: {error_rate: 0.1}
+    outbox: {error_rate: 0.2}

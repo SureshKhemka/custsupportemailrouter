@@ -1,0 +1,8 @@
+{#- One reply per case (FR-21): greeting, one paragraph per part, closing. -#}
+{% if first_name %}Hi {{ first_name }},{% else %}Hello,{% endif %}
+
+{% for part in parts %}{{ part | trim }}
+{% if not loop.last %}
+{% endif %}{% endfor %}
+Warm regards,
+Customer Care

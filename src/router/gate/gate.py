@@ -186,11 +186,18 @@ def check_other_customers(reply: str, f: CaseFacts) -> list[str]:
         if owner and owner != me:
             reasons.append(f"mentions {oid}, which belongs to another customer")
     name = X.greeting_name(reply)
-    if name:
+    if name and name.lower() not in _NOT_NAMES:
         allowed = {n.split()[0].lower() for n in [f.customer.name if f.customer else "", f.sender_display_name or ""] if n}
-        if name.lower() not in allowed and any(c.name.split()[0].lower() == name.lower() for c in others):
-            reasons.append(f"greets '{name}', which is another customer's name")
-    return reasons
+        if name.lower() not in allowed:
+            reasons.append(f"greets '{name}', who is not the verified sender")
+    for addr in re.findall(r"[\w.+-]+@[\w-]+\.[\w.-]+", reply):
+        mine = {e.lower() for e in (f.customer.emails if f.customer else [])}
+        if addr.lower() not in mine and addr.lower() not in f.allowed_emails:
+            reasons.append(f"mentions an email address that is not the sender's ({addr})")
+    return list(dict.fromkeys(reasons))
+
+
+_NOT_NAMES = {"there", "team", "all", "everyone", "sir", "madam", "customer", "friend", "again"}
 
 
 def check_payment_details(reply: str, f: CaseFacts) -> list[str]:

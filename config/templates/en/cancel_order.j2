@@ -1,0 +1,9 @@
+{%- if action == "succeeded" -%}
+As requested, your order {{ o.order_id }} has been cancelled. Any payment made will be refunded to your original payment method.
+{%- elif action == "failed" -%}
+We couldn't cancel order {{ o.order_id }} automatically. A colleague will look into it and confirm with you.
+{%- elif action == "held" and cancellable -%}
+We can cancel order {{ o.order_id }} for you.
+{%- elif not cancellable -%}
+Order {{ o.order_id }} has already shipped, so it can no longer be cancelled.{% if returnable %} Once it's delivered, you can request a return within {{ policy.returns.window_days }} days.{% endif %}
+{%- endif -%}

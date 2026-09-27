@@ -1,0 +1,13 @@
+# EV-11 heavy: failures that retries cannot absorb, so the FR-25/FR-26 path (human takeover) really runs.
+faults:
+  enabled: true
+  seed: 11
+  timeout_hang_s: 0.01
+  services:
+    returns: {error_rate: 0.7}
+    refund: {error_rate: 0.7}
+    replacement: {error_rate: 0.7}
+    order:
+      scripted:
+        - {endpoint: "POST /orders/{order_id}/cancel", fail_times: 3, kind: error}
+    outbox: {error_rate: 0.5}

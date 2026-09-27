@@ -1,0 +1,12 @@
+{%- set items = lines_text or o.items -%}
+{%- if remedy == "replacement" -%}
+I'm sorry {{ items }} from order {{ o.order_id }} {{ "arrived in that condition" if kind == "damaged" else "wasn't what you ordered" }}. We'd like to send you a replacement.
+{%- elif remedy == "refund" -%}
+I'm sorry {{ items }} from order {{ o.order_id }} {{ "arrived in that condition" if kind == "damaged" else "wasn't what you ordered" }}. Since it's currently out of stock, we'd like to refund {{ amount }} to your original payment method.
+{%- elif remedy == "request_photo" -%}
+I'm sorry about the problem with {{ items }} from order {{ o.order_id }}. Could you please reply with a photo of it? We need one to arrange a replacement or refund for items above {{ photo_threshold }}.
+{%- elif reason == "reported_late" -%}
+Order {{ o.order_id }} was delivered on {{ o.delivered }}. Problems with an item need to be reported within {{ policy.damage.report_window_days }} days of delivery, so a colleague will review your message.
+{%- elif reason == "not_delivered" -%}
+Order {{ o.order_id }} hasn't been delivered yet. A colleague will look into this with you.
+{%- endif -%}

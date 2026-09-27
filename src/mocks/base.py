@@ -275,7 +275,10 @@ def create_app(svc: MockService) -> FastAPI:
             except json.JSONDecodeError:
                 resp_body = None
             if fault and fault.kind == "timeout_after_commit":
-                await asyncio.sleep(svc.faults.hang_s)  # the action happened; the caller just never hears
+                # The action happened, but the caller gets a gateway timeout instead of the result.
+                await asyncio.sleep(svc.faults.hang_s)
+                resp_body = {"committed_but_timed_out": resp_body}
+                response = JSONResponse({"error": "injected_timeout_after_commit"}, 504)
 
         svc.record_call({
             "at": svc.clock.now().isoformat(timespec="seconds"),
@@ -311,6 +314,12 @@ def create_app(svc: MockService) -> FastAPI:
     def calls(since: int = 0) -> list[dict[str, Any]]:
         with svc.lock:
             return [c for c in svc.calls if c["seq"] > since]
+
+    @app.get("/_admin/state")
+    def state() -> dict[str, Any]:
+        """Raw service state for evals and debugging (never faulted, never logged as a call)."""
+        with svc.lock:
+            return svc.data
 
     @app.get("/_admin/faults")
     def get_faults() -> dict[str, Any]:

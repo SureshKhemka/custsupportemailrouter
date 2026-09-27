@@ -1,0 +1,9 @@
+# Overlay for end-to-end evals: labels assume live mode and dataset replay time (D-039).
+clock:
+  fixed_now: "2026-09-27T10:00:00+05:30"
+  process_at_received_time: true
+routing:
+  operating_mode:
+    default: live
+faults:
+  timeout_hang_s: 0.01
