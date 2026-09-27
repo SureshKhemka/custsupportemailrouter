@@ -1,0 +1,11 @@
+escalation:
+  # FR-16: any escalation signal forces the case to a human. Only thresholds are configurable.
+  repeat_contact:
+    min_contacts: 2        # this contact is at least the 2nd about the same issue...
+    window_days: 14        # ...within this many days
+  vip_tiers: [vip]
+  high_order_value:
+    threshold: 50000       # in policy currency
+  # Minimum LLM confidence for tone-based signals to count.
+  anger_min_confidence: 0.70
+  chargeback_or_public_threat_min_confidence: 0.60

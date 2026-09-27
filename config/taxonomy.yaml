@@ -1,0 +1,17 @@
+taxonomy:
+  # FR-12 intents; FR-15 per-intent confidence thresholds (below threshold => uncertain => human).
+  intents:
+    order_status:     {threshold: 0.80, description: "Where is my order / delivery status / tracking."}
+    return_request:   {threshold: 0.85, description: "Customer wants to return one or more items."}
+    refund_status:    {threshold: 0.85, description: "Customer asks about the state of a refund."}
+    damaged_item:     {threshold: 0.85, description: "Item arrived damaged or defective."}
+    wrong_item:       {threshold: 0.85, description: "Customer received a different item than ordered."}
+    billing_dispute:  {threshold: 0.75, description: "Disputes a charge, amount or invoice."}
+    payment_issue:    {threshold: 0.75, description: "Failed, duplicate or pending payment problems."}
+    cancel_order:     {threshold: 0.85, description: "Customer wants to cancel an order."}
+    product_question: {threshold: 0.80, description: "Question about a product, size, compatibility, stock."}
+    complaint:        {threshold: 0.75, description: "General dissatisfaction not covered by another intent."}
+    legal_threat:     {threshold: 0.50, description: "Explicit or implicit legal action, lawyer, consumer court."}
+    abuse:            {threshold: 0.60, description: "Abusive, threatening or harassing language toward staff."}
+    spam_or_auto:     {threshold: 0.90, description: "Spam, out-of-office, bounce, newsletter, automated mail."}
+    other:            {threshold: 0.70, description: "Anything else."}

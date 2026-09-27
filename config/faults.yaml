@@ -1,0 +1,13 @@
+faults:
+  # MS-9 fault injection, per service. Disabled by default; eval overlays turn it on (EV-11).
+  enabled: false
+  seed: 42
+  services: {}
+  # Example:
+  # services:
+  #   refund:
+  #     error_rate: 0.1
+  #     latency_ms: 200
+  #     timeout_rate: 0.05
+  #     scripted:
+  #       - {endpoint: "POST /refunds", match: {order_id: "ORD-1001"}, fail_times: 1, kind: error}

@@ -1,0 +1,16 @@
+policy:
+  currency: INR                                  # PO-6
+  returns:                                       # PO-1
+    window_days: 30
+    non_returnable_categories: [perishable, personalised, hygiene]
+  refunds:                                       # PO-2
+    to_original_payment_method: true
+    include_shipping_for: [damaged, wrong_item, never_arrived]
+  damage:                                        # PO-3
+    report_window_days: 7
+    remedy_order: [replacement, refund]          # replacement if in stock, otherwise refund
+    photo_required_above_item_value: 2000
+  delivery:                                      # PO-4
+    lost_after_days_without_update: 7
+  cancellation:                                  # PO-5
+    allowed_statuses: [placed, packed]

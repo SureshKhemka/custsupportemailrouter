@@ -1,0 +1,49 @@
+llm:
+  # CF-2: switching provider is config only. LM Studio and OpenRouter share the
+  # OpenAI-compatible adapter; Anthropic has its own.
+  providers:
+    lmstudio:
+      kind: openai_compat
+      base_url: http://localhost:1234/v1
+      api_key_env: null          # LM Studio needs no key by default
+    openrouter:
+      kind: openai_compat
+      base_url: https://openrouter.ai/api/v1
+      api_key_env: OPENROUTER_API_KEY
+    anthropic:
+      kind: anthropic
+      base_url: https://api.anthropic.com
+      api_key_env: ANTHROPIC_API_KEY
+
+  # Defaults applied to every step unless the step overrides them.
+  defaults:
+    temperature: 0.0
+    max_tokens: 1024
+    timeout_s: 120
+    retries: 2
+
+  # Model per LLM step (CF-1). Decision D-003: Qwen 3.8 27B served by LM Studio.
+  # Model id as LM Studio exposes it (https://lmstudio.ai/models/qwen/qwen3.8-27b).
+  steps:
+    understand:
+      provider: lmstudio
+      model: qwen/qwen3.8-27b
+      prompt_version: v1
+    summarize:
+      provider: lmstudio
+      model: qwen/qwen3.8-27b
+      prompt_version: v1
+    compose:
+      provider: lmstudio
+      model: qwen/qwen3.8-27b
+      prompt_version: v1
+      temperature: 0.3
+    judge:
+      # EV-8: the judge is configured separately so it can be pointed at a different model.
+      provider: lmstudio
+      model: qwen/qwen3.8-27b
+      prompt_version: v1
+
+  # Cost estimates (LL-5), USD per million tokens. Local models cost 0.
+  pricing:
+    qwen/qwen3.8-27b: {input_per_mtok: 0.0, output_per_mtok: 0.0}

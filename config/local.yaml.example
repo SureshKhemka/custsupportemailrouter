@@ -1,0 +1,4 @@
+# Copy to config/local.yaml (gitignored) for personal overrides. Example: use Claude for understanding.
+# llm:
+#   steps:
+#     understand: {provider: anthropic, model: claude-sonnet-5}

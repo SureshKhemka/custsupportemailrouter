@@ -1,0 +1,44 @@
+routing:
+  # FR-35 queues. gate_failures receives cases whose reply failed the outbound gate.
+  queues: [general, billing, legal, abuse, gate_failures]
+
+  # FR-18 routing matrix. Modes: AUTO, DRAFT, ROUTE, ROUTE_NO_DRAFT, CLOSE.
+  # `conditions` override the mode when a code-evaluated condition holds.
+  # Known conditions: lost_shipment, not_eligible, already_shipped.
+  # FR-19 invariants are enforced in code and cannot be overridden here.
+  matrix:
+    order_status:
+      mode: AUTO
+      conditions: {lost_shipment: ROUTE}
+      queue: general
+    return_request:
+      mode: AUTO
+      conditions: {not_eligible: DRAFT}
+      queue: general
+    refund_status:    {mode: AUTO, queue: general}
+    damaged_item:     {mode: DRAFT, queue: general}
+    wrong_item:       {mode: DRAFT, queue: general}
+    cancel_order:
+      mode: AUTO
+      conditions: {already_shipped: DRAFT}
+      queue: general
+    billing_dispute:  {mode: ROUTE, queue: billing}
+    payment_issue:    {mode: ROUTE, queue: billing}
+    legal_threat:     {mode: ROUTE_NO_DRAFT, queue: legal, priority: true}
+    abuse:            {mode: ROUTE_NO_DRAFT, queue: abuse}
+    product_question: {mode: ROUTE, queue: general}
+    complaint:        {mode: ROUTE, queue: general}
+    other:            {mode: ROUTE, queue: general}
+    spam_or_auto:     {mode: CLOSE, queue: null}
+
+  actions:
+    # Refund issuance is always DRAFT unless an amount threshold is set, below which it may be AUTO.
+    # Applies to damaged/wrong/never-arrived remedies only: return refunds are issued by the
+    # e-commerce platform after pickup (decision D-002).
+    refund_issuance:
+      auto_below_amount: null
+
+  # FR-22 operating mode: shadow | draft_only | live. Per-intent overrides allowed.
+  operating_mode:
+    default: shadow
+    per_intent: {}

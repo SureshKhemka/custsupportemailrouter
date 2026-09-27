@@ -1,0 +1,9 @@
+services:
+  # MS-*: each mock is a separate HTTP service. Point base_url at a real service to swap it.
+  customer:    {base_url: "http://127.0.0.1:8101", timeout_s: 5, retries: 2, backoff_s: 0.2}
+  order:       {base_url: "http://127.0.0.1:8102", timeout_s: 5, retries: 2, backoff_s: 0.2}
+  returns:     {base_url: "http://127.0.0.1:8103", timeout_s: 5, retries: 2, backoff_s: 0.2}
+  refund:      {base_url: "http://127.0.0.1:8104", timeout_s: 5, retries: 2, backoff_s: 0.2}
+  payments:    {base_url: "http://127.0.0.1:8105", timeout_s: 5, retries: 2, backoff_s: 0.2}
+  replacement: {base_url: "http://127.0.0.1:8106", timeout_s: 5, retries: 2, backoff_s: 0.2}
+  outbox:      {base_url: "http://127.0.0.1:8107", timeout_s: 5, retries: 2, backoff_s: 0.2}

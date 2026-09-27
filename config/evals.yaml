@@ -1,0 +1,16 @@
+evals:
+  judge:
+    rubrics: [correctness, completeness, tone, clarity, language]
+    min_human_agreement: 0.70     # EV-8: below this, judge scores are marked unreliable
+  consistency_runs: 3             # EV-12
+  targets:                        # section 9.3-9.5 starting targets
+    intent_macro_f1: 0.90
+    multi_intent_exact_match: 0.80
+    order_id_accuracy: 0.95
+    legal_recall: 1.0
+    language_accuracy: 0.95
+    spam_precision: 1.0
+    agent_summary_avg: 4.0
+    reply_judge_avg: 4.0
+    reply_min_score_for_auto: 3
+    disposition_accuracy: 0.90
