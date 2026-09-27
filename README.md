@@ -1,2 +1,2 @@
 # custsupportemailrouter
-AI Workflow for Customer Support Email Router for a Ecommerce retailer 
+Customer support email router (learning prototype): LLMs interpret, code decides, humans own risk.
