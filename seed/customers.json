@@ -1,0 +1,1083 @@
+{
+  "customers": [
+    {
+      "customer_id": "CUST-0001",
+      "name": "Aarav Sharma",
+      "emails": [
+        "aarav.sharma@example.com"
+      ],
+      "phone": "+91 9356507558",
+      "tier": "vip",
+      "created_at": "@now-1056d",
+      "address": {
+        "line1": "161, MG Road",
+        "city": "Delhi",
+        "pincode": "110001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0002",
+      "name": "Priya Patel",
+      "emails": [
+        "priya.patel@example.com",
+        "priya.p.shop@example.in"
+      ],
+      "phone": "+91 9176554301",
+      "tier": "standard",
+      "created_at": "@now-218d",
+      "address": {
+        "line1": "254, Anna Salai",
+        "city": "Bengaluru",
+        "pincode": "560001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0003",
+      "name": "Rohan Mehta",
+      "emails": [
+        "rohan.mehta@example.com"
+      ],
+      "phone": "+91 9487997924",
+      "tier": "standard",
+      "created_at": "@now-1455d",
+      "address": {
+        "line1": "55, Linking Road",
+        "city": "Chennai",
+        "pincode": "600001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0004",
+      "name": "Ananya Iyer",
+      "emails": [
+        "ananya.iyer@example.com"
+      ],
+      "phone": "+91 9176011192",
+      "tier": "standard",
+      "created_at": "@now-438d",
+      "address": {
+        "line1": "239, Linking Road",
+        "city": "Hyderabad",
+        "pincode": "500001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0005",
+      "name": "Vikram Singh",
+      "emails": [
+        "vikram.singh@example.com",
+        "vikram.work@example.org"
+      ],
+      "phone": "+91 9372787541",
+      "tier": "standard",
+      "created_at": "@now-74d",
+      "address": {
+        "line1": "69, Linking Road",
+        "city": "Pune",
+        "pincode": "411001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0006",
+      "name": "Sneha Reddy",
+      "emails": [
+        "sneha.reddy@example.com"
+      ],
+      "phone": "+91 9988300222",
+      "tier": "standard",
+      "created_at": "@now-1162d",
+      "address": {
+        "line1": "101, MG Road",
+        "city": "Kolkata",
+        "pincode": "700001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0007",
+      "name": "Arjun Nair",
+      "emails": [
+        "arjun.nair@example.com"
+      ],
+      "phone": "+91 9641697976",
+      "tier": "standard",
+      "created_at": "@now-351d",
+      "address": {
+        "line1": "267, MG Road",
+        "city": "Jaipur",
+        "pincode": "302001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0008",
+      "name": "Kavya Menon",
+      "emails": [
+        "kavya.menon@example.com"
+      ],
+      "phone": "+91 9403198143",
+      "tier": "standard",
+      "created_at": "@now-478d",
+      "address": {
+        "line1": "219, MG Road",
+        "city": "Ahmedabad",
+        "pincode": "380001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0009",
+      "name": "Rahul Gupta",
+      "emails": [
+        "rahul.gupta@example.com",
+        "rahulg@example.in"
+      ],
+      "phone": "+91 9555167935",
+      "tier": "standard",
+      "created_at": "@now-301d",
+      "address": {
+        "line1": "29, Residency Road",
+        "city": "Kochi",
+        "pincode": "682001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0010",
+      "name": "Isha Kapoor",
+      "emails": [
+        "isha.kapoor@example.com"
+      ],
+      "phone": "+91 9138180678",
+      "tier": "standard",
+      "created_at": "@now-1485d",
+      "address": {
+        "line1": "208, MG Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0011",
+      "name": "Aditya Rao",
+      "emails": [
+        "aditya.rao@example.com"
+      ],
+      "phone": "+91 9237163403",
+      "tier": "standard",
+      "created_at": "@now-590d",
+      "address": {
+        "line1": "163, MG Road",
+        "city": "Delhi",
+        "pincode": "110001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0012",
+      "name": "Meera Joshi",
+      "emails": [
+        "meera.joshi@example.com"
+      ],
+      "phone": "+91 9297091922",
+      "tier": "standard",
+      "created_at": "@now-1070d",
+      "address": {
+        "line1": "71, Residency Road",
+        "city": "Bengaluru",
+        "pincode": "560001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0013",
+      "name": "Karan Malhotra",
+      "emails": [
+        "karan.malhotra@example.com"
+      ],
+      "phone": "+91 9241101538",
+      "tier": "standard",
+      "created_at": "@now-326d",
+      "address": {
+        "line1": "55, Park Street",
+        "city": "Chennai",
+        "pincode": "600001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0014",
+      "name": "Divya Pillai",
+      "emails": [
+        "divya.pillai@example.com"
+      ],
+      "phone": "+91 9135201156",
+      "tier": "standard",
+      "created_at": "@now-151d",
+      "address": {
+        "line1": "82, Residency Road",
+        "city": "Hyderabad",
+        "pincode": "500001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0015",
+      "name": "Siddharth Bose",
+      "emails": [
+        "siddharth.bose@example.com"
+      ],
+      "phone": "+91 9666225340",
+      "tier": "standard",
+      "created_at": "@now-203d",
+      "address": {
+        "line1": "25, Residency Road",
+        "city": "Pune",
+        "pincode": "411001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0016",
+      "name": "Pooja Desai",
+      "emails": [
+        "pooja.desai@example.com"
+      ],
+      "phone": "+91 9586343212",
+      "tier": "standard",
+      "created_at": "@now-234d",
+      "address": {
+        "line1": "229, MG Road",
+        "city": "Kolkata",
+        "pincode": "700001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0017",
+      "name": "Nikhil Verma",
+      "emails": [
+        "nikhil.verma@example.com"
+      ],
+      "phone": "+91 9797732845",
+      "tier": "standard",
+      "created_at": "@now-690d",
+      "address": {
+        "line1": "37, Park Street",
+        "city": "Jaipur",
+        "pincode": "302001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0018",
+      "name": "Riya Chatterjee",
+      "emails": [
+        "riya.chatterjee@example.com"
+      ],
+      "phone": "+91 9980563787",
+      "tier": "standard",
+      "created_at": "@now-1007d",
+      "address": {
+        "line1": "292, Residency Road",
+        "city": "Ahmedabad",
+        "pincode": "380001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0019",
+      "name": "Manish Agarwal",
+      "emails": [
+        "manish.agarwal@example.com"
+      ],
+      "phone": "+91 9219647568",
+      "tier": "standard",
+      "created_at": "@now-107d",
+      "address": {
+        "line1": "263, Park Street",
+        "city": "Kochi",
+        "pincode": "682001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0020",
+      "name": "Neha Kulkarni",
+      "emails": [
+        "neha.kulkarni@example.com"
+      ],
+      "phone": "+91 9353766329",
+      "tier": "standard",
+      "created_at": "@now-1044d",
+      "address": {
+        "line1": "246, Linking Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0021",
+      "name": "Suresh Krishnan",
+      "emails": [
+        "suresh.krishnan@example.com",
+        "suresh.k.home@example.in"
+      ],
+      "phone": "+91 9856968743",
+      "tier": "standard",
+      "created_at": "@now-500d",
+      "address": {
+        "line1": "93, Linking Road",
+        "city": "Delhi",
+        "pincode": "110001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0022",
+      "name": "Lakshmi Subramanian",
+      "emails": [
+        "lakshmi.subramanian@example.com"
+      ],
+      "phone": "+91 9724896505",
+      "tier": "standard",
+      "created_at": "@now-369d",
+      "address": {
+        "line1": "41, MG Road",
+        "city": "Bengaluru",
+        "pincode": "560001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0023",
+      "name": "Harsh Vardhan",
+      "emails": [
+        "harsh.vardhan@example.com"
+      ],
+      "phone": "+91 9458374658",
+      "tier": "standard",
+      "created_at": "@now-983d",
+      "address": {
+        "line1": "200, Linking Road",
+        "city": "Chennai",
+        "pincode": "600001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0024",
+      "name": "Tanvi Shah",
+      "emails": [
+        "tanvi.shah@example.com",
+        "tanvi.personal@example.org"
+      ],
+      "phone": "+91 9919204340",
+      "tier": "standard",
+      "created_at": "@now-1320d",
+      "address": {
+        "line1": "233, MG Road",
+        "city": "Hyderabad",
+        "pincode": "500001"
+      },
+      "contact_history": [
+        {
+          "at": "@now-2d",
+          "channel": "email",
+          "order_id": "ORD-100051",
+          "topic": "order_status",
+          "summary": "Asked where the order is; told it is in transit."
+        }
+      ]
+    },
+    {
+      "customer_id": "CUST-0025",
+      "name": "Amit Chauhan",
+      "emails": [
+        "amit.chauhan@example.com"
+      ],
+      "phone": "+91 9628744929",
+      "tier": "standard",
+      "created_at": "@now-85d",
+      "address": {
+        "line1": "59, Anna Salai",
+        "city": "Pune",
+        "pincode": "411001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0026",
+      "name": "Shruti Bhatt",
+      "emails": [
+        "shruti.bhatt@example.com"
+      ],
+      "phone": "+91 9893958820",
+      "tier": "standard",
+      "created_at": "@now-1083d",
+      "address": {
+        "line1": "219, Linking Road",
+        "city": "Kolkata",
+        "pincode": "700001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0027",
+      "name": "Varun Khanna",
+      "emails": [
+        "varun.khanna@example.com"
+      ],
+      "phone": "+91 9510129711",
+      "tier": "standard",
+      "created_at": "@now-856d",
+      "address": {
+        "line1": "281, Residency Road",
+        "city": "Jaipur",
+        "pincode": "302001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0028",
+      "name": "Aishwarya Das",
+      "emails": [
+        "aishwarya.das@example.com"
+      ],
+      "phone": "+91 9350435846",
+      "tier": "standard",
+      "created_at": "@now-892d",
+      "address": {
+        "line1": "275, Park Street",
+        "city": "Ahmedabad",
+        "pincode": "380001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0029",
+      "name": "Deepak Yadav",
+      "emails": [
+        "deepak.yadav@example.com"
+      ],
+      "phone": "+91 9916297487",
+      "tier": "standard",
+      "created_at": "@now-260d",
+      "address": {
+        "line1": "237, Linking Road",
+        "city": "Kochi",
+        "pincode": "682001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0030",
+      "name": "Nandini Hegde",
+      "emails": [
+        "nandini.hegde@example.com"
+      ],
+      "phone": "+91 9586116422",
+      "tier": "vip",
+      "created_at": "@now-329d",
+      "address": {
+        "line1": "33, Linking Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "contact_history": [
+        {
+          "at": "@now-5d",
+          "channel": "email",
+          "order_id": "ORD-100052",
+          "topic": "order_status",
+          "summary": "Asked for delivery status."
+        },
+        {
+          "at": "@now-2d",
+          "channel": "phone",
+          "order_id": "ORD-100052",
+          "topic": "order_status",
+          "summary": "Called about delay; promised update within 48h."
+        }
+      ]
+    },
+    {
+      "customer_id": "CUST-0031",
+      "name": "Farhan Qureshi",
+      "emails": [
+        "farhan.qureshi@example.com"
+      ],
+      "phone": "+91 9748412516",
+      "tier": "standard",
+      "created_at": "@now-1353d",
+      "address": {
+        "line1": "289, MG Road",
+        "city": "Delhi",
+        "pincode": "110001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0032",
+      "name": "Zoya Khan",
+      "emails": [
+        "zoya.khan@example.com"
+      ],
+      "phone": "+91 9410147127",
+      "tier": "standard",
+      "created_at": "@now-852d",
+      "address": {
+        "line1": "17, Anna Salai",
+        "city": "Bengaluru",
+        "pincode": "560001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0033",
+      "name": "Gurpreet Kaur",
+      "emails": [
+        "gurpreet.kaur@example.com",
+        "gurpreet.k@example.in"
+      ],
+      "phone": "+91 9989924861",
+      "tier": "standard",
+      "created_at": "@now-1094d",
+      "address": {
+        "line1": "286, Anna Salai",
+        "city": "Chennai",
+        "pincode": "600001"
+      },
+      "contact_history": [
+        {
+          "at": "@now-40d",
+          "channel": "email",
+          "order_id": null,
+          "topic": "product_question",
+          "summary": "Asked about jacket sizing."
+        }
+      ]
+    },
+    {
+      "customer_id": "CUST-0034",
+      "name": "Rajesh Pandey",
+      "emails": [
+        "rajesh.pandey@example.com"
+      ],
+      "phone": "+91 9790092310",
+      "tier": "standard",
+      "created_at": "@now-958d",
+      "address": {
+        "line1": "234, Residency Road",
+        "city": "Hyderabad",
+        "pincode": "500001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0035",
+      "name": "Swati Mishra",
+      "emails": [
+        "swati.mishra@example.com"
+      ],
+      "phone": "+91 9486398366",
+      "tier": "standard",
+      "created_at": "@now-636d",
+      "address": {
+        "line1": "208, Park Street",
+        "city": "Pune",
+        "pincode": "411001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0036",
+      "name": "Kunal Saxena",
+      "emails": [
+        "kunal.saxena@example.com"
+      ],
+      "phone": "+91 9614330193",
+      "tier": "standard",
+      "created_at": "@now-501d",
+      "address": {
+        "line1": "227, MG Road",
+        "city": "Kolkata",
+        "pincode": "700001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0037",
+      "name": "Anjali Tiwari",
+      "emails": [
+        "anjali.tiwari@example.com"
+      ],
+      "phone": "+91 9549571613",
+      "tier": "standard",
+      "created_at": "@now-577d",
+      "address": {
+        "line1": "71, Residency Road",
+        "city": "Jaipur",
+        "pincode": "302001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0038",
+      "name": "Mohit Jain",
+      "emails": [
+        "mohit.jain@example.com"
+      ],
+      "phone": "+91 9377401630",
+      "tier": "standard",
+      "created_at": "@now-668d",
+      "address": {
+        "line1": "5, Anna Salai",
+        "city": "Ahmedabad",
+        "pincode": "380001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0039",
+      "name": "Ritika Arora",
+      "emails": [
+        "ritika.arora@example.com"
+      ],
+      "phone": "+91 9750829671",
+      "tier": "standard",
+      "created_at": "@now-1310d",
+      "address": {
+        "line1": "125, Residency Road",
+        "city": "Kochi",
+        "pincode": "682001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0040",
+      "name": "Sanjay Dutta",
+      "emails": [
+        "sanjay.dutta@example.com"
+      ],
+      "phone": "+91 9266903227",
+      "tier": "standard",
+      "created_at": "@now-1216d",
+      "address": {
+        "line1": "220, Linking Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0041",
+      "name": "Emily Carter",
+      "emails": [
+        "emily.carter@example.com"
+      ],
+      "phone": "+91 9945637082",
+      "tier": "vip",
+      "created_at": "@now-1184d",
+      "address": {
+        "line1": "83, Park Street",
+        "city": "Delhi",
+        "pincode": "110001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0042",
+      "name": "James Wilson",
+      "emails": [
+        "james.wilson@example.com"
+      ],
+      "phone": "+91 9794937854",
+      "tier": "standard",
+      "created_at": "@now-1104d",
+      "address": {
+        "line1": "185, MG Road",
+        "city": "Bengaluru",
+        "pincode": "560001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0043",
+      "name": "Sofia Garcia",
+      "emails": [
+        "sofia.garcia@example.com",
+        "sofia.g@example.org"
+      ],
+      "phone": "+91 9359369337",
+      "tier": "vip",
+      "created_at": "@now-288d",
+      "address": {
+        "line1": "67, MG Road",
+        "city": "Chennai",
+        "pincode": "600001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0044",
+      "name": "Lukas Schneider",
+      "emails": [
+        "lukas.schneider@example.com"
+      ],
+      "phone": "+91 9162695231",
+      "tier": "vip",
+      "created_at": "@now-492d",
+      "address": {
+        "line1": "87, Park Street",
+        "city": "Hyderabad",
+        "pincode": "500001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0045",
+      "name": "Chen Wei",
+      "emails": [
+        "chen.wei@example.com"
+      ],
+      "phone": "+91 9759662737",
+      "tier": "standard",
+      "created_at": "@now-817d",
+      "address": {
+        "line1": "286, Anna Salai",
+        "city": "Pune",
+        "pincode": "411001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0046",
+      "name": "Olivia Brown",
+      "emails": [
+        "olivia.brown@example.com"
+      ],
+      "phone": "+91 9599868339",
+      "tier": "standard",
+      "created_at": "@now-384d",
+      "address": {
+        "line1": "257, MG Road",
+        "city": "Kolkata",
+        "pincode": "700001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0047",
+      "name": "Daniel Fischer",
+      "emails": [
+        "daniel.fischer@example.com"
+      ],
+      "phone": "+91 9385567581",
+      "tier": "standard",
+      "created_at": "@now-1051d",
+      "address": {
+        "line1": "292, Park Street",
+        "city": "Jaipur",
+        "pincode": "302001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0048",
+      "name": "Maria Lopez",
+      "emails": [
+        "maria.lopez@example.com"
+      ],
+      "phone": "+91 9800803998",
+      "tier": "standard",
+      "created_at": "@now-1197d",
+      "address": {
+        "line1": "125, Residency Road",
+        "city": "Ahmedabad",
+        "pincode": "380001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0049",
+      "name": "Tom Becker",
+      "emails": [
+        "tom.becker@example.com"
+      ],
+      "phone": "+91 9367575629",
+      "tier": "standard",
+      "created_at": "@now-925d",
+      "address": {
+        "line1": "205, MG Road",
+        "city": "Kochi",
+        "pincode": "682001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0050",
+      "name": "Hannah Weber",
+      "emails": [
+        "hannah.weber@example.com"
+      ],
+      "phone": "+91 9208212636",
+      "tier": "standard",
+      "created_at": "@now-221d",
+      "address": {
+        "line1": "238, Residency Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0051",
+      "name": "Abhishek Rane",
+      "emails": [
+        "abhishek.rane@example.com",
+        "abhi.rane@example.in"
+      ],
+      "phone": "+91 9555841588",
+      "tier": "vip",
+      "created_at": "@now-547d",
+      "address": {
+        "line1": "159, Park Street",
+        "city": "Delhi",
+        "pincode": "110001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0052",
+      "name": "Payal Sethi",
+      "emails": [
+        "payal.sethi@example.com"
+      ],
+      "phone": "+91 9512539726",
+      "tier": "standard",
+      "created_at": "@now-286d",
+      "address": {
+        "line1": "219, Anna Salai",
+        "city": "Bengaluru",
+        "pincode": "560001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0053",
+      "name": "Yash Thakur",
+      "emails": [
+        "yash.thakur@example.com"
+      ],
+      "phone": "+91 9403436084",
+      "tier": "standard",
+      "created_at": "@now-1180d",
+      "address": {
+        "line1": "267, Anna Salai",
+        "city": "Chennai",
+        "pincode": "600001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0054",
+      "name": "Bhavna Goel",
+      "emails": [
+        "bhavna.goel@example.com"
+      ],
+      "phone": "+91 9227043973",
+      "tier": "standard",
+      "created_at": "@now-492d",
+      "address": {
+        "line1": "297, MG Road",
+        "city": "Hyderabad",
+        "pincode": "500001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0055",
+      "name": "Irfan Sheikh",
+      "emails": [
+        "irfan.sheikh@example.com"
+      ],
+      "phone": "+91 9602080733",
+      "tier": "standard",
+      "created_at": "@now-221d",
+      "address": {
+        "line1": "1, MG Road",
+        "city": "Pune",
+        "pincode": "411001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0056",
+      "name": "Rekha Nambiar",
+      "emails": [
+        "rekha.nambiar@example.com"
+      ],
+      "phone": "+91 9240988023",
+      "tier": "standard",
+      "created_at": "@now-370d",
+      "address": {
+        "line1": "268, Linking Road",
+        "city": "Kolkata",
+        "pincode": "700001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0057",
+      "name": "Sameer Kohli",
+      "emails": [
+        "sameer.kohli@example.com"
+      ],
+      "phone": "+91 9204959167",
+      "tier": "standard",
+      "created_at": "@now-623d",
+      "address": {
+        "line1": "180, Park Street",
+        "city": "Jaipur",
+        "pincode": "302001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0058",
+      "name": "Alisha Fernandes",
+      "emails": [
+        "alisha.fernandes@example.com"
+      ],
+      "phone": "+91 9864367343",
+      "tier": "standard",
+      "created_at": "@now-791d",
+      "address": {
+        "line1": "294, Anna Salai",
+        "city": "Ahmedabad",
+        "pincode": "380001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0059",
+      "name": "Gaurav Bhatia",
+      "emails": [
+        "gaurav.bhatia@example.com"
+      ],
+      "phone": "+91 9678082428",
+      "tier": "standard",
+      "created_at": "@now-973d",
+      "address": {
+        "line1": "130, Park Street",
+        "city": "Kochi",
+        "pincode": "682001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0060",
+      "name": "Mehul Doshi",
+      "emails": [
+        "mehul.doshi@example.com"
+      ],
+      "phone": "+91 9889728241",
+      "tier": "vip",
+      "created_at": "@now-1123d",
+      "address": {
+        "line1": "186, Residency Road",
+        "city": "Mumbai",
+        "pincode": "400001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0061",
+      "name": "Sana Mirza",
+      "emails": [
+        "sana.mirza@example.com"
+      ],
+      "phone": "+91 9745184406",
+      "tier": "standard",
+      "created_at": "@now-1287d",
+      "address": {
+        "line1": "158, MG Road",
+        "city": "Delhi",
+        "pincode": "110001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0062",
+      "name": "Pranav Kulkarni",
+      "emails": [
+        "pranav.kulkarni@example.com"
+      ],
+      "phone": "+91 9564693513",
+      "tier": "standard",
+      "created_at": "@now-976d",
+      "address": {
+        "line1": "207, Linking Road",
+        "city": "Bengaluru",
+        "pincode": "560001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0063",
+      "name": "Jyoti Rawat",
+      "emails": [
+        "jyoti.rawat@example.com"
+      ],
+      "phone": "+91 9101293367",
+      "tier": "standard",
+      "created_at": "@now-119d",
+      "address": {
+        "line1": "107, Anna Salai",
+        "city": "Chennai",
+        "pincode": "600001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0064",
+      "name": "Ramesh Iyengar",
+      "emails": [
+        "ramesh.iyengar@example.com"
+      ],
+      "phone": "+91 9840368527",
+      "tier": "standard",
+      "created_at": "@now-1141d",
+      "address": {
+        "line1": "42, Linking Road",
+        "city": "Hyderabad",
+        "pincode": "500001"
+      },
+      "contact_history": []
+    },
+    {
+      "customer_id": "CUST-0065",
+      "name": "Carlos Ruiz",
+      "emails": [
+        "carlos.ruiz@example.com"
+      ],
+      "phone": "+91 9346066933",
+      "tier": "standard",
+      "created_at": "@now-1104d",
+      "address": {
+        "line1": "28, Residency Road",
+        "city": "Pune",
+        "pincode": "411001"
+      },
+      "contact_history": []
+    }
+  ]
+}

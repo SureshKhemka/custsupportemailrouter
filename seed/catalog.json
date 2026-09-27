@@ -1,0 +1,235 @@
+{
+  "products": [
+    {
+      "sku": "SKU-EL-001",
+      "name": "Wireless Earbuds Pro",
+      "category": "electronics",
+      "price": 2499,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-EL-002",
+      "name": "Noise Cancelling Headphones",
+      "category": "electronics",
+      "price": 7999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-EL-003",
+      "name": "Smartphone X12 128GB",
+      "category": "electronics",
+      "price": 24999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-EL-004",
+      "name": "Ultrabook Laptop 14",
+      "category": "electronics",
+      "price": 64999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-EL-005",
+      "name": "Smartwatch Fit 3",
+      "category": "electronics",
+      "price": 8999,
+      "in_stock": false
+    },
+    {
+      "sku": "SKU-EL-006",
+      "name": "65W USB-C Charger",
+      "category": "electronics",
+      "price": 1299,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-EL-007",
+      "name": "Power Bank 20000mAh",
+      "category": "electronics",
+      "price": 1799,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-EL-008",
+      "name": "4K Smart TV 55in",
+      "category": "electronics",
+      "price": 52999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-EL-009",
+      "name": "Bluetooth Speaker Mini",
+      "category": "electronics",
+      "price": 1999,
+      "in_stock": false
+    },
+    {
+      "sku": "SKU-AP-001",
+      "name": "Cotton Crew T-Shirt",
+      "category": "apparel",
+      "price": 699,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-AP-002",
+      "name": "Slim Fit Jeans",
+      "category": "apparel",
+      "price": 1999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-AP-003",
+      "name": "Running Shoes Air",
+      "category": "apparel",
+      "price": 3499,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-AP-004",
+      "name": "Winter Puffer Jacket",
+      "category": "apparel",
+      "price": 4599,
+      "in_stock": false
+    },
+    {
+      "sku": "SKU-AP-005",
+      "name": "Linen Kurta",
+      "category": "apparel",
+      "price": 1499,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HM-001",
+      "name": "Mixer Grinder 750W",
+      "category": "home",
+      "price": 3999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HM-002",
+      "name": "Cotton Bedsheet Set",
+      "category": "home",
+      "price": 1299,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HM-003",
+      "name": "Non-stick Cookware Set",
+      "category": "home",
+      "price": 5499,
+      "in_stock": false
+    },
+    {
+      "sku": "SKU-HM-004",
+      "name": "LED Desk Lamp",
+      "category": "home",
+      "price": 1799,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HM-005",
+      "name": "Ceramic Dinner Set",
+      "category": "home",
+      "price": 2999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HM-006",
+      "name": "Air Fryer 4L",
+      "category": "home",
+      "price": 6999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-BK-001",
+      "name": "The Pragmatic Cook (Book)",
+      "category": "books",
+      "price": 499,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-BK-002",
+      "name": "Mystery of the Hills (Book)",
+      "category": "books",
+      "price": 399,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-BT-001",
+      "name": "Vitamin C Face Serum",
+      "category": "beauty",
+      "price": 899,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-BT-002",
+      "name": "Hair Dryer Compact",
+      "category": "beauty",
+      "price": 1599,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-PR-001",
+      "name": "Assorted Chocolate Box",
+      "category": "perishable",
+      "price": 899,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-PR-002",
+      "name": "Premium Dry Fruits 1kg",
+      "category": "perishable",
+      "price": 1499,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-PR-003",
+      "name": "Fresh Alphonso Mangoes 2kg",
+      "category": "perishable",
+      "price": 1199,
+      "in_stock": false
+    },
+    {
+      "sku": "SKU-PS-001",
+      "name": "Engraved Photo Mug",
+      "category": "personalised",
+      "price": 699,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-PS-002",
+      "name": "Custom Name T-Shirt",
+      "category": "personalised",
+      "price": 999,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-PS-003",
+      "name": "Engraved Steel Bottle",
+      "category": "personalised",
+      "price": 1299,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HY-001",
+      "name": "Electric Toothbrush",
+      "category": "hygiene",
+      "price": 2299,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HY-002",
+      "name": "Trimmer Pro",
+      "category": "hygiene",
+      "price": 1899,
+      "in_stock": true
+    },
+    {
+      "sku": "SKU-HY-003",
+      "name": "Innerwear Pack of 3",
+      "category": "hygiene",
+      "price": 599,
+      "in_stock": true
+    }
+  ]
+}

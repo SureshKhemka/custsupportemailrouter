@@ -20,6 +20,10 @@ app:
   supported_languages: [en]
   timezone: Asia/Kolkata
 
+clock:
+  # FR-38: fixed "now" for deterministic runs (tests/evals set this). null = real time.
+  fixed_now: null
+
 intake:
   # FR-3: near-duplicates from the same sender about the same issue within this window merge into one case.
   near_duplicate_window_minutes: 60
@@ -45,3 +49,4 @@ paths:
   templates: config/templates
   tone_guide: config/tone_guide.md
   rubrics: config/rubrics
+  mock_state: var/mocks          # mock service state snapshots and call logs

@@ -7,6 +7,7 @@ being silently ignored.
 from __future__ import annotations
 
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
 
@@ -51,6 +52,18 @@ class AppSection(Strict):
         return v
 
 
+class ClockConfig(Strict):
+    # FR-38 / NF-2: a fixed "now" for deterministic runs. null = real time.
+    fixed_now: datetime | None = None
+
+    @field_validator("fixed_now")
+    @classmethod
+    def _aware(cls, v: datetime | None) -> datetime | None:
+        if v is not None and v.tzinfo is None:
+            raise ValueError("fixed_now must include a UTC offset, e.g. 2026-09-27T10:00:00+05:30")
+        return v
+
+
 class IntakeConfig(Strict):
     near_duplicate_window_minutes: int = Field(gt=0)
 
@@ -82,6 +95,7 @@ class PathsConfig(Strict):
     templates: Path
     tone_guide: Path
     rubrics: Path
+    mock_state: Path
 
     def resolved(self, root: Path) -> PathsConfig:
         return PathsConfig(**{k: (v if v.is_absolute() else root / v) for k, v in self})
@@ -303,7 +317,7 @@ class ScriptedFault(Strict):
     endpoint: str = Field(pattern=r"^(GET|POST|PUT|PATCH|DELETE) /")
     match: dict[str, Any] = Field(default_factory=dict)
     fail_times: int = Field(ge=1)
-    kind: Literal["error", "timeout"]
+    kind: Literal["error", "timeout", "timeout_after_commit"]
 
 
 class ServiceFaults(Strict):
@@ -316,6 +330,8 @@ class ServiceFaults(Strict):
 class FaultsConfig(Strict):
     enabled: bool
     seed: int
+    # How long a "timeout" fault hangs before answering; set above the client timeout.
+    timeout_hang_s: float = Field(gt=0)
     services: dict[str, ServiceFaults] = Field(default_factory=dict)
 
     @field_validator("services")
@@ -359,6 +375,7 @@ class EvalsConfig(Strict):
 
 class Settings(Strict):
     app: AppSection
+    clock: ClockConfig
     intake: IntakeConfig
     sla: SlaConfig
     paths: PathsConfig

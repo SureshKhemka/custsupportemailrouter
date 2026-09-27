@@ -2,6 +2,7 @@ faults:
   # MS-9 fault injection, per service. Disabled by default; eval overlays turn it on (EV-11).
   enabled: false
   seed: 42
+  timeout_hang_s: 30      # a 'timeout' fault hangs this long (longer than client timeouts)
   services: {}
   # Example:
   # services:
@@ -10,4 +11,6 @@ faults:
   #     latency_ms: 200
   #     timeout_rate: 0.05
   #     scripted:
-  #       - {endpoint: "POST /refunds", match: {order_id: "ORD-1001"}, fail_times: 1, kind: error}
+  #       # kind: error (503, nothing done) | timeout (hang, nothing done) |
+  #       #       timeout_after_commit (action IS done, then hang: tests idempotent retries)
+  #       - {endpoint: "POST /refunds", match: {order_id: "ORD-100001"}, fail_times: 1, kind: error}

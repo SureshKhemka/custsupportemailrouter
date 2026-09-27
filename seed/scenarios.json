@@ -1,0 +1,271 @@
+{
+  "scenarios": {
+    "status_placed": {
+      "description": "Single order in status placed",
+      "customer_id": "CUST-0003",
+      "order_id": "ORD-100001"
+    },
+    "status_packed": {
+      "description": "Single order in status packed",
+      "customer_id": "CUST-0004",
+      "order_id": "ORD-100002"
+    },
+    "status_shipped": {
+      "description": "Single order in status shipped",
+      "customer_id": "CUST-0006",
+      "order_id": "ORD-100003"
+    },
+    "status_in_transit": {
+      "description": "Single order in status in_transit",
+      "customer_id": "CUST-0008",
+      "order_id": "ORD-100004"
+    },
+    "status_out_for_delivery": {
+      "description": "Single order in status out_for_delivery",
+      "customer_id": "CUST-0010",
+      "order_id": "ORD-100005"
+    },
+    "status_delivered": {
+      "description": "Single order in status delivered",
+      "customer_id": "CUST-0011",
+      "order_id": "ORD-100006"
+    },
+    "status_delayed": {
+      "description": "In transit, 2 days past promised date, tracking still updating",
+      "customer_id": "CUST-0012",
+      "order_id": "ORD-100007"
+    },
+    "status_lost": {
+      "description": "In transit, no tracking update for 9 days (lost at 7)",
+      "customer_id": "CUST-0013",
+      "order_id": "ORD-100008"
+    },
+    "lost_boundary_7d": {
+      "description": "No tracking update for exactly 7 days (lost boundary)",
+      "customer_id": "CUST-0015",
+      "order_id": "ORD-100009"
+    },
+    "not_lost_6d": {
+      "description": "Delayed; last tracking update 6 days ago (not yet lost)",
+      "customer_id": "CUST-0016",
+      "order_id": "ORD-100010"
+    },
+    "status_cancelled": {
+      "description": "Cancelled prepaid order, refund processed",
+      "customer_id": "CUST-0017",
+      "order_id": "ORD-100011"
+    },
+    "status_return_in_progress": {
+      "description": "Return authorised, pickup pending",
+      "customer_id": "CUST-0018",
+      "order_id": "ORD-100012"
+    },
+    "status_returned": {
+      "description": "Return received; refund initiated, not yet processed",
+      "customer_id": "CUST-0019",
+      "order_id": "ORD-100013"
+    },
+    "status_refunded": {
+      "description": "Returned and refunded",
+      "customer_id": "CUST-0020",
+      "order_id": "ORD-100014"
+    },
+    "return_window_day_29": {
+      "description": "Returnable item delivered 29 days ago",
+      "customer_id": "CUST-0023",
+      "order_id": "ORD-100015"
+    },
+    "return_window_day_30": {
+      "description": "Returnable item delivered 30 days ago",
+      "customer_id": "CUST-0025",
+      "order_id": "ORD-100016"
+    },
+    "return_window_day_31": {
+      "description": "Returnable item delivered 31 days ago",
+      "customer_id": "CUST-0026",
+      "order_id": "ORD-100017"
+    },
+    "return_window_day_1": {
+      "description": "Returnable item delivered 1 days ago",
+      "customer_id": "CUST-0027",
+      "order_id": "ORD-100018"
+    },
+    "return_window_day_45": {
+      "description": "Returnable item delivered 45 days ago",
+      "customer_id": "CUST-0028",
+      "order_id": "ORD-100019"
+    },
+    "damage_window_day_6": {
+      "description": "Dinner set (breakable, 2999) delivered 6 days ago",
+      "customer_id": "CUST-0029",
+      "order_id": "ORD-100020"
+    },
+    "damage_window_day_7": {
+      "description": "Dinner set (breakable, 2999) delivered 7 days ago",
+      "customer_id": "CUST-0031",
+      "order_id": "ORD-100021"
+    },
+    "damage_window_day_8": {
+      "description": "Dinner set (breakable, 2999) delivered 8 days ago",
+      "customer_id": "CUST-0032",
+      "order_id": "ORD-100022"
+    },
+    "damaged_low_value_in_stock": {
+      "description": "Bedsheet 1299 (below photo threshold), in stock -> replacement",
+      "customer_id": "CUST-0034",
+      "order_id": "ORD-100023"
+    },
+    "damaged_high_value_in_stock": {
+      "description": "Mixer 3999 (photo required), in stock -> replacement",
+      "customer_id": "CUST-0035",
+      "order_id": "ORD-100024"
+    },
+    "damaged_out_of_stock": {
+      "description": "Cookware 5499 out of stock -> refund incl. shipping",
+      "customer_id": "CUST-0036",
+      "order_id": "ORD-100025"
+    },
+    "damaged_with_shipping_fee": {
+      "description": "Book 499 + 79 shipping; damaged -> refund 578 if out of stock (in stock -> replacement)",
+      "customer_id": "CUST-0037",
+      "order_id": "ORD-100026"
+    },
+    "wrong_item": {
+      "description": "T-shirts x2 delivered yesterday; customer says wrong item",
+      "customer_id": "CUST-0038",
+      "order_id": "ORD-100027"
+    },
+    "non_returnable_perishable": {
+      "description": "perishable item delivered 4 days ago",
+      "customer_id": "CUST-0039",
+      "order_id": "ORD-100028"
+    },
+    "non_returnable_personalised": {
+      "description": "personalised item delivered 4 days ago",
+      "customer_id": "CUST-0040",
+      "order_id": "ORD-100029"
+    },
+    "non_returnable_hygiene": {
+      "description": "hygiene item delivered 4 days ago",
+      "customer_id": "CUST-0042",
+      "order_id": "ORD-100030"
+    },
+    "high_value_delivered": {
+      "description": "Laptop 64999 delivered 3 days ago (VIP customer)",
+      "customer_id": "CUST-0043",
+      "order_id": "ORD-100031"
+    },
+    "high_value_in_transit": {
+      "description": "TV 52999 in transit, on time (VIP customer)",
+      "customer_id": "CUST-0044",
+      "order_id": "ORD-100032"
+    },
+    "high_value_multi_qty": {
+      "description": "2 x phone = 49998 (just under 50000 threshold)",
+      "customer_id": "CUST-0045",
+      "order_id": "ORD-100033"
+    },
+    "multi_item_delivered": {
+      "description": "Jeans + 2 T-shirts + book, delivered 8 days ago",
+      "customer_id": "CUST-0046",
+      "order_id": "ORD-100034"
+    },
+    "partially_returned": {
+      "description": "Shoes + kurta; kurta already returned and refunded",
+      "customer_id": "CUST-0048",
+      "order_id": "ORD-100035"
+    },
+    "split_shipment": {
+      "description": "Two orders placed the same day: lamp delivered, bedsheet in transit and late",
+      "customer_id": "CUST-0049",
+      "order_ids": [
+        "ORD-100036",
+        "ORD-100037"
+      ]
+    },
+    "late_and_double_charged": {
+      "description": "Smartwatch 8999 late AND charged twice",
+      "customer_id": "CUST-0050",
+      "order_id": "ORD-100038"
+    },
+    "duplicate_charge": {
+      "description": "Hair dryer charged twice",
+      "customer_id": "CUST-0052",
+      "order_id": "ORD-100039"
+    },
+    "failed_then_retried": {
+      "description": "First card payment failed, retry succeeded",
+      "customer_id": "CUST-0053",
+      "order_id": "ORD-100040"
+    },
+    "payment_failed_pending": {
+      "description": "UPI payment failed; order placed, unpaid",
+      "customer_id": "CUST-0054",
+      "order_id": "ORD-100041"
+    },
+    "secondary_email_owner": {
+      "description": "Customer has two registered emails; writes from the second",
+      "customer_id": "CUST-0002",
+      "order_id": "ORD-100042",
+      "email": "priya.p.shop@example.in"
+    },
+    "single_recent_order": {
+      "description": "Customer with exactly one recent order (no order no. needed)",
+      "customer_id": "CUST-0055",
+      "order_id": "ORD-100043"
+    },
+    "several_recent_orders": {
+      "description": "Three recent orders; ambiguous without an order number",
+      "customer_id": "CUST-0009",
+      "order_ids": [
+        "ORD-100044",
+        "ORD-100045",
+        "ORD-100046"
+      ]
+    },
+    "unknown_sender": {
+      "description": "Sender address not registered to any customer",
+      "email": "stranger.unknown@example.net"
+    },
+    "not_owner": {
+      "description": "CUST-0005 writes about CUST-0011's order",
+      "customer_id": "CUST-0005",
+      "order_id": "ORD-100006",
+      "owner_id": "CUST-0011"
+    },
+    "customer_no_orders": {
+      "description": "Registered customer with no orders",
+      "customer_id": "CUST-0047"
+    },
+    "vip_in_transit": {
+      "description": "VIP customer, order in transit",
+      "customer_id": "CUST-0001",
+      "order_id": "ORD-100047"
+    },
+    "cancel_before_ship": {
+      "description": "Placed, not shipped -> cancellable",
+      "customer_id": "CUST-0007",
+      "order_id": "ORD-100048"
+    },
+    "cancel_packed": {
+      "description": "Packed, not shipped -> cancellable",
+      "customer_id": "CUST-0014",
+      "order_id": "ORD-100049"
+    },
+    "cancel_after_ship": {
+      "description": "Already shipped -> not cancellable",
+      "customer_id": "CUST-0021",
+      "order_id": "ORD-100050"
+    },
+    "repeat_contact_second": {
+      "description": "Second contact about a late order (1 prior contact 2 days ago)",
+      "customer_id": "CUST-0024",
+      "order_id": "ORD-100051"
+    },
+    "repeat_contact_third": {
+      "description": "Third contact about the same late order (VIP)",
+      "customer_id": "CUST-0030",
+      "order_id": "ORD-100052"
+    }
+  }
+}

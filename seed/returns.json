@@ -1,0 +1,427 @@
+{
+  "returns": [
+    {
+      "return_id": "RT-100012-1",
+      "order_id": "ORD-100012",
+      "items": [
+        {
+          "line_id": "ORD-100012-L1",
+          "sku": "SKU-AP-003",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "authorised",
+      "created_at": "@now-3d",
+      "pickup_scheduled_for": "@now-1d",
+      "idempotency_key": "seed:RT-100012-1"
+    },
+    {
+      "return_id": "RT-100013-1",
+      "order_id": "ORD-100013",
+      "items": [
+        {
+          "line_id": "ORD-100013-L1",
+          "sku": "SKU-HM-006",
+          "qty": 1
+        }
+      ],
+      "reason": "not_as_expected",
+      "status": "received",
+      "created_at": "@now-12d",
+      "pickup_scheduled_for": "@now-10d",
+      "idempotency_key": "seed:RT-100013-1"
+    },
+    {
+      "return_id": "RT-100014-1",
+      "order_id": "ORD-100014",
+      "items": [
+        {
+          "line_id": "ORD-100014-L1",
+          "sku": "SKU-EL-002",
+          "qty": 1
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "refunded",
+      "created_at": "@now-18d",
+      "pickup_scheduled_for": "@now-16d",
+      "idempotency_key": "seed:RT-100014-1"
+    },
+    {
+      "return_id": "RT-100035-1",
+      "order_id": "ORD-100035",
+      "items": [
+        {
+          "line_id": "ORD-100035-L2",
+          "sku": "SKU-AP-005",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "refunded",
+      "created_at": "@now-10d",
+      "pickup_scheduled_for": "@now-8d",
+      "idempotency_key": "seed:RT-100035-1"
+    },
+    {
+      "return_id": "RT-100055-1",
+      "order_id": "ORD-100055",
+      "items": [
+        {
+          "line_id": "ORD-100055-L1",
+          "sku": "SKU-EL-002",
+          "qty": 1
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "refunded",
+      "created_at": "@now-1d",
+      "pickup_scheduled_for": "@now+1d",
+      "idempotency_key": "seed:RT-100055-1"
+    },
+    {
+      "return_id": "RT-100059-1",
+      "order_id": "ORD-100059",
+      "items": [
+        {
+          "line_id": "ORD-100059-L1",
+          "sku": "SKU-HM-004",
+          "qty": 1
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "refunded",
+      "created_at": "@now-70d",
+      "pickup_scheduled_for": "@now-68d",
+      "idempotency_key": "seed:RT-100059-1"
+    },
+    {
+      "return_id": "RT-100067-1",
+      "order_id": "ORD-100067",
+      "items": [
+        {
+          "line_id": "ORD-100067-L1",
+          "sku": "SKU-BK-002",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100067-L2",
+          "sku": "SKU-EL-003",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100067-L3",
+          "sku": "SKU-HM-002",
+          "qty": 2
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "authorised",
+      "created_at": "@now-66d",
+      "pickup_scheduled_for": "@now-64d",
+      "idempotency_key": "seed:RT-100067-1"
+    },
+    {
+      "return_id": "RT-100068-1",
+      "order_id": "ORD-100068",
+      "items": [
+        {
+          "line_id": "ORD-100068-L1",
+          "sku": "SKU-EL-005",
+          "qty": 2
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "received",
+      "created_at": "@now-33d",
+      "pickup_scheduled_for": "@now-31d",
+      "idempotency_key": "seed:RT-100068-1"
+    },
+    {
+      "return_id": "RT-100072-1",
+      "order_id": "ORD-100072",
+      "items": [
+        {
+          "line_id": "ORD-100072-L1",
+          "sku": "SKU-EL-005",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "authorised",
+      "created_at": "@now-72d",
+      "pickup_scheduled_for": "@now-70d",
+      "idempotency_key": "seed:RT-100072-1"
+    },
+    {
+      "return_id": "RT-100075-1",
+      "order_id": "ORD-100075",
+      "items": [
+        {
+          "line_id": "ORD-100075-L1",
+          "sku": "SKU-HY-002",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "authorised",
+      "created_at": "@now-50d",
+      "pickup_scheduled_for": "@now-48d",
+      "idempotency_key": "seed:RT-100075-1"
+    },
+    {
+      "return_id": "RT-100078-1",
+      "order_id": "ORD-100078",
+      "items": [
+        {
+          "line_id": "ORD-100078-L1",
+          "sku": "SKU-AP-005",
+          "qty": 1
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "received",
+      "created_at": "@now-31d",
+      "pickup_scheduled_for": "@now-29d",
+      "idempotency_key": "seed:RT-100078-1"
+    },
+    {
+      "return_id": "RT-100080-1",
+      "order_id": "ORD-100080",
+      "items": [
+        {
+          "line_id": "ORD-100080-L1",
+          "sku": "SKU-BT-002",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100080-L2",
+          "sku": "SKU-PR-001",
+          "qty": 2
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "refunded",
+      "created_at": "@now-7d",
+      "pickup_scheduled_for": "@now-5d",
+      "idempotency_key": "seed:RT-100080-1"
+    },
+    {
+      "return_id": "RT-100083-1",
+      "order_id": "ORD-100083",
+      "items": [
+        {
+          "line_id": "ORD-100083-L1",
+          "sku": "SKU-HM-002",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100083-L2",
+          "sku": "SKU-BK-001",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100083-L3",
+          "sku": "SKU-PR-003",
+          "qty": 1
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "received",
+      "created_at": "@now-55d",
+      "pickup_scheduled_for": "@now-53d",
+      "idempotency_key": "seed:RT-100083-1"
+    },
+    {
+      "return_id": "RT-100084-1",
+      "order_id": "ORD-100084",
+      "items": [
+        {
+          "line_id": "ORD-100084-L1",
+          "sku": "SKU-AP-005",
+          "qty": 1
+        }
+      ],
+      "reason": "not_as_expected",
+      "status": "authorised",
+      "created_at": "@now-55d",
+      "pickup_scheduled_for": "@now-53d",
+      "idempotency_key": "seed:RT-100084-1"
+    },
+    {
+      "return_id": "RT-100085-1",
+      "order_id": "ORD-100085",
+      "items": [
+        {
+          "line_id": "ORD-100085-L1",
+          "sku": "SKU-BT-002",
+          "qty": 2
+        },
+        {
+          "line_id": "ORD-100085-L2",
+          "sku": "SKU-EL-009",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100085-L3",
+          "sku": "SKU-HM-003",
+          "qty": 2
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "refunded",
+      "created_at": "@now-41d",
+      "pickup_scheduled_for": "@now-39d",
+      "idempotency_key": "seed:RT-100085-1"
+    },
+    {
+      "return_id": "RT-100087-1",
+      "order_id": "ORD-100087",
+      "items": [
+        {
+          "line_id": "ORD-100087-L1",
+          "sku": "SKU-HY-003",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100087-L2",
+          "sku": "SKU-HM-005",
+          "qty": 1
+        }
+      ],
+      "reason": "not_as_expected",
+      "status": "authorised",
+      "created_at": "@now-5d",
+      "pickup_scheduled_for": "@now-3d",
+      "idempotency_key": "seed:RT-100087-1"
+    },
+    {
+      "return_id": "RT-100093-1",
+      "order_id": "ORD-100093",
+      "items": [
+        {
+          "line_id": "ORD-100093-L1",
+          "sku": "SKU-PR-002",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "received",
+      "created_at": "@now-72d",
+      "pickup_scheduled_for": "@now-70d",
+      "idempotency_key": "seed:RT-100093-1"
+    },
+    {
+      "return_id": "RT-100147-1",
+      "order_id": "ORD-100147",
+      "items": [
+        {
+          "line_id": "ORD-100147-L1",
+          "sku": "SKU-EL-003",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "received",
+      "created_at": "@now-11d",
+      "pickup_scheduled_for": "@now-9d",
+      "idempotency_key": "seed:RT-100147-1"
+    },
+    {
+      "return_id": "RT-100152-1",
+      "order_id": "ORD-100152",
+      "items": [
+        {
+          "line_id": "ORD-100152-L1",
+          "sku": "SKU-EL-003",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100152-L2",
+          "sku": "SKU-HM-006",
+          "qty": 1
+        }
+      ],
+      "reason": "changed_mind",
+      "status": "authorised",
+      "created_at": "@now-67d",
+      "pickup_scheduled_for": "@now-65d",
+      "idempotency_key": "seed:RT-100152-1"
+    },
+    {
+      "return_id": "RT-100154-1",
+      "order_id": "ORD-100154",
+      "items": [
+        {
+          "line_id": "ORD-100154-L1",
+          "sku": "SKU-EL-007",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "received",
+      "created_at": "@now-57d",
+      "pickup_scheduled_for": "@now-55d",
+      "idempotency_key": "seed:RT-100154-1"
+    },
+    {
+      "return_id": "RT-100163-1",
+      "order_id": "ORD-100163",
+      "items": [
+        {
+          "line_id": "ORD-100163-L1",
+          "sku": "SKU-EL-003",
+          "qty": 1
+        }
+      ],
+      "reason": "not_as_expected",
+      "status": "authorised",
+      "created_at": "@now-70d",
+      "pickup_scheduled_for": "@now-68d",
+      "idempotency_key": "seed:RT-100163-1"
+    },
+    {
+      "return_id": "RT-100164-1",
+      "order_id": "ORD-100164",
+      "items": [
+        {
+          "line_id": "ORD-100164-L1",
+          "sku": "SKU-EL-009",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100164-L2",
+          "sku": "SKU-HM-005",
+          "qty": 1
+        },
+        {
+          "line_id": "ORD-100164-L3",
+          "sku": "SKU-AP-004",
+          "qty": 1
+        }
+      ],
+      "reason": "size_issue",
+      "status": "authorised",
+      "created_at": "@now-3d",
+      "pickup_scheduled_for": "@now-1d",
+      "idempotency_key": "seed:RT-100164-1"
+    },
+    {
+      "return_id": "RT-100165-1",
+      "order_id": "ORD-100165",
+      "items": [
+        {
+          "line_id": "ORD-100165-L1",
+          "sku": "SKU-BT-001",
+          "qty": 1
+        }
+      ],
+      "reason": "not_as_expected",
+      "status": "received",
+      "created_at": "@now-60d",
+      "pickup_scheduled_for": "@now-58d",
+      "idempotency_key": "seed:RT-100165-1"
+    }
+  ]
+}
