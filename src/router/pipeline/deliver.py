@@ -15,6 +15,7 @@ from zoneinfo import ZoneInfo
 
 from router.clients import Backends, ServiceError
 from router.config.models import Settings
+from router.core.ids import normalize_message_id
 from router.decide.identity import extract_order_ids
 from router.gate import ActionRecord, CaseFacts, GateResult, run_gate
 from router.pipeline.actions import ActionResult
@@ -86,8 +87,9 @@ def deliver(case_id: str, email: InboundEmail, decision: Decision, reply: Compos
     elif auto and dv.send_reply and not action_failed:
         if gate and gate.passed:
             try:
+                mid = normalize_message_id(email.message_id)
                 msg = backends.outbox.send(case_id, email.sender, f"Re: {email.subject}".strip(), reply.text,
-                                           facts.language, email.message_id, idempotency_key=f"{case_id}:reply:{email.message_id}")
+                                           facts.language, email.message_id, idempotency_key=f"{case_id}:reply:{mid}")
                 event["message_id"] = msg.get("message_id")
                 sent = True
             except ServiceError as exc:  # FR-25: the send itself failed -> human

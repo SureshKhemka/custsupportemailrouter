@@ -10,3 +10,8 @@ replies:
 summaries:
   # LL-1: a short, fact-grounded summary for the agent on every case that reaches a human.
   enabled: true
+
+review:
+  # BM-2: an approved draft counts as "lightly edited" when the edit size (1 - similarity) is at
+  # most this, "heavily edited" above it, "unchanged" at 0.
+  light_edit_max: 0.2

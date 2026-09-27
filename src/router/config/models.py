@@ -332,6 +332,10 @@ class SummariesConfig(Strict):
     enabled: bool
 
 
+class ReviewConfig(Strict):
+    light_edit_max: float = Field(gt=0, lt=1)
+
+
 # --------------------------------------------------------------------------- escalation / policy
 
 
@@ -467,6 +471,7 @@ class Settings(Strict):
     handling: HandlingConfig
     replies: RepliesConfig
     summaries: SummariesConfig
+    review: ReviewConfig
     escalation: EscalationConfig
     policy: PolicyConfig
     services: dict[str, ServiceConfig]

@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS runs (
 CREATE TABLE IF NOT EXISTS cases (
     case_id TEXT PRIMARY KEY, thread_root TEXT NOT NULL, sender TEXT NOT NULL, customer_id TEXT,
     status TEXT NOT NULL, stage TEXT NOT NULL, disposition TEXT, mode TEXT, queue TEXT, priority INTEGER DEFAULT 0,
-    language TEXT, sla_due TEXT, primary_order_id TEXT, intents TEXT, flags TEXT, summary TEXT,
+    language TEXT, sla_due TEXT, primary_order_id TEXT, intents TEXT, flags TEXT, summary TEXT, resolution TEXT,
     created_at TEXT NOT NULL, updated_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS emails (
@@ -49,6 +49,15 @@ CREATE TABLE IF NOT EXISTS drafts (
     status TEXT NOT NULL, created_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS drafts_case ON drafts(case_id, seq);
+CREATE TABLE IF NOT EXISTS agent_actions (
+    seq INTEGER PRIMARY KEY AUTOINCREMENT, case_id TEXT NOT NULL, agent TEXT NOT NULL, action TEXT NOT NULL,
+    draft_seq INTEGER, edit_size REAL, edit_class TEXT, decision_changed INTEGER NOT NULL DEFAULT 0,
+    reason TEXT, detail TEXT, at TEXT NOT NULL
+);
+CREATE TRIGGER IF NOT EXISTS agent_actions_no_update BEFORE UPDATE ON agent_actions
+    BEGIN SELECT RAISE(ABORT, 'agent actions are append-only'); END;
+CREATE TRIGGER IF NOT EXISTS agent_actions_no_delete BEFORE DELETE ON agent_actions
+    BEGIN SELECT RAISE(ABORT, 'agent actions are append-only'); END;
 CREATE TABLE IF NOT EXISTS actions (
     key TEXT PRIMARY KEY, case_id TEXT NOT NULL, type TEXT NOT NULL, order_id TEXT NOT NULL, status TEXT NOT NULL,
     attempts INTEGER NOT NULL DEFAULT 0, request TEXT, response TEXT, error TEXT, updated_at TEXT NOT NULL
@@ -56,7 +65,7 @@ CREATE TABLE IF NOT EXISTS actions (
 """
 
 CASE_FIELDS = {"customer_id", "status", "stage", "disposition", "mode", "queue", "priority", "language", "sla_due",
-               "primary_order_id", "intents", "flags", "summary"}
+               "primary_order_id", "intents", "flags", "summary", "resolution"}
 _JSON_FIELDS = {"intents", "flags", "summary"}
 
 
@@ -81,10 +90,11 @@ class Store:
         self._lock = threading.RLock()
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.executescript(SCHEMA)
-        try:  # databases created before M8 lack the summary column
-            self._conn.execute("ALTER TABLE cases ADD COLUMN summary TEXT")
-        except sqlite3.OperationalError:
-            pass
+        for column in ("summary", "resolution"):  # databases created before M8/M9 lack these columns
+            try:
+                self._conn.execute(f"ALTER TABLE cases ADD COLUMN {column} TEXT")
+            except sqlite3.OperationalError:
+                pass
 
     @contextmanager
     def tx(self) -> Iterator[sqlite3.Connection]:
@@ -163,6 +173,40 @@ class Store:
             cur = c.execute("INSERT INTO drafts (case_id, text, gate, status, created_at) VALUES (?,?,?,?,?)",
                             (case_id, mask_obj(text), json.dumps(gate), status, at.isoformat()))
             return int(cur.lastrowid)
+
+    def set_draft_status(self, seq: int, status: str) -> None:
+        with self.tx() as c:
+            c.execute("UPDATE drafts SET status=? WHERE seq=?", (status, seq))
+
+    # ------------------------------------------------------------------ agent actions (FR-36, append-only)
+
+    def add_agent_action(self, *, case_id: str, agent: str, action: str, at: datetime, draft_seq: int | None = None,
+                         edit_size: float | None = None, edit_class: str | None = None,
+                         decision_changed: bool = False, reason: str | None = None,
+                         detail: dict[str, Any] | None = None) -> int:
+        with self.tx() as c:
+            cur = c.execute("INSERT INTO agent_actions (case_id, agent, action, draft_seq, edit_size, edit_class,"
+                            " decision_changed, reason, detail, at) VALUES (?,?,?,?,?,?,?,?,?,?)",
+                            (case_id, agent, action, draft_seq, edit_size, edit_class, int(decision_changed), reason,
+                             json.dumps(mask_obj(detail or {}), default=str), at.isoformat()))
+            return int(cur.lastrowid)
+
+    def agent_actions(self, case_id: str | None = None) -> list[dict[str, Any]]:
+        sql, args = "SELECT * FROM agent_actions", ()
+        if case_id:
+            sql, args = sql + " WHERE case_id=?", (case_id,)
+        rows = self._conn.execute(sql + " ORDER BY seq", args).fetchall()
+        return [{**dict(r), "detail": json.loads(r["detail"]), "decision_changed": bool(r["decision_changed"])}
+                for r in rows]
+
+    def open_cases(self, queue: str | None = None) -> list[dict[str, Any]]:
+        """Cases waiting for a human, priority first, then by SLA due time (FR-35)."""
+        sql = "SELECT * FROM cases WHERE status='open' AND stage='awaiting_human'"
+        args: tuple = ()
+        if queue:
+            sql, args = sql + " AND queue=?", (queue,)
+        rows = self._conn.execute(sql + " ORDER BY priority DESC, sla_due IS NULL, sla_due, created_at", args)
+        return [_case(r) for r in rows.fetchall()]
 
     def drafts(self, case_id: str) -> list[dict[str, Any]]:
         rows = self._conn.execute("SELECT * FROM drafts WHERE case_id=? ORDER BY seq", (case_id,)).fetchall()

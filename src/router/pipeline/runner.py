@@ -147,7 +147,8 @@ class Router:
         self._record_email(ctx, ir.outcome)
         self.store.append_event(ctx.case_id, ctx.next_step("intake"), "email_received", {
             "outcome": ir.outcome, "message_id": ir.message_id, "source": ctx.source, "sender": email.sender,
-            "subject": email.subject, "body": email.body, "received_at": email.received_at.isoformat(),
+            "sender_name": email.from_.name, "subject": email.subject, "body": email.body,
+            "received_at": email.received_at.isoformat(),
             "in_reply_to": email.in_reply_to, "attachments": [a.model_dump() for a in email.attachments],
             "order_ids_in_text": ir.order_ids, "automated": ir.automated, "near_duplicate_of": ir.near_duplicate_of,
         }, now)

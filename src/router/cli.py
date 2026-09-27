@@ -17,6 +17,14 @@ app.add_typer(config_app, name="config")
 dataset_app = typer.Typer(no_args_is_help=True, help="Labelled dataset: check, stats, write inbox.")
 app.add_typer(dataset_app, name="dataset")
 
+
+def _review_app():
+    from router.review.cli import app as review
+    return review
+
+
+app.add_typer(_review_app(), name="review")
+
 err = Console(stderr=True)
 
 OverlayOpt = Annotated[

@@ -86,6 +86,21 @@ personalised by the LLM, `config/replies.yaml`) → outbound gate → outbox, or
 with an LLM case summary. The default operating mode is `shadow` (nothing is sent
 and no action runs); set `routing.operating_mode.default: live` to act and send to the mock outbox.
 
+## Reviewing cases (agents)
+
+```bash
+uv run router review queues                    # open cases per queue, SLA warnings
+uv run router review list [QUEUE]              # priority first, then SLA due time
+uv run router review show CASE                 # summary, emails, intents + evidence, live facts, decision, draft
+uv run router review approve CASE [--edit | --text-file F] [--no-actions] --agent NAME
+uv run router review reject CASE --reason "..." [--close] [--override]
+uv run router review reassign CASE QUEUE --reason "..."
+```
+
+Approving runs the case's proposed actions first (idempotently) and re-checks the reply with
+the outbound gate using live facts; a blocked reply must be edited. Every agent action is recorded
+with its edit size, so draft acceptance and human overrides can be measured.
+
 ## Labelled dataset
 
 `dataset/` holds 289 labelled emails: `dev/` (188) for building and `test/` (101), which is
