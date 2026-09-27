@@ -33,9 +33,11 @@ enforced in code; a config that tries to break them will not load.
 ### Switching LLM provider
 
 Each LLM step (`understand`, `summarize`, `compose`, `judge`) names a provider and model in
-`config/llm.yaml`. Default: Qwen 3.8 27B on LM Studio (`http://localhost:1234/v1`).
+`config/llm.yaml`. Default: Qwen 3.8 27B on LM Studio (`http://localhost:1234/v1`); the judge
+uses Gemma 4 31B, a different model family.
 To switch, override `llm.steps.<step>.provider/model` in `config/local.yaml` or an overlay;
-see `config/eval/anthropic.yaml`. No code changes.
+see `config/eval/anthropic.yaml`. No code changes. Keys come only from environment variables
+(`.env.example`). Prompts are versioned files in `config/prompts/<step>/<version>.md`.
 
 ## Mock backend services
 
@@ -79,7 +81,7 @@ uv run router case <case_id>                      # case record + full audit tra
 
 Stored in `var/db/router.db` (SQLite). The event log is append-only (enforced by triggers),
 payment data is masked before anything is written, and each run records the effective config.
-_Current pipeline: intake → (understand, M6) → identify. Decisions, actions, replies and the
+_Current pipeline: intake → understand (LLM) → identify. Decisions, actions, replies and the
 gate are wired in later milestones._
 
 ## Labelled dataset
@@ -114,6 +116,20 @@ uv run router dataset inbox --split dev     # write the emails as inbox JSON fil
 | `router/core/ids.py` | Case ids and idempotency keys (FR-24) |
 | `router/core/masking.py` | Card-number detection and masking (FR-41) |
 | `router/gate/` | Outbound gate: 7 checks every reply must pass (FR-31) |
+
+## Evals
+
+```bash
+uv run router eval understand                       # dev split, live LLM calls, outputs recorded
+uv run router eval understand --mode replay         # same run from recordings, no LLM calls
+uv run router eval understand -c config/eval/anthropic.yaml   # compare another model (EV-3)
+uv run router eval understand --ids D131,D096 --limit 20      # subsets while iterating
+```
+
+Reports (JSON + Markdown) go to `var/reports/<kind>/<timestamp>-<split>/`. Each report includes
+the effective config, the model and prompt version per step, the dataset version, metrics against
+the targets in `config/evals.yaml`, every failing example, and a comparison with the previous run.
+The held-out `--split test` is for final measurement only.
 
 ## Tests
 

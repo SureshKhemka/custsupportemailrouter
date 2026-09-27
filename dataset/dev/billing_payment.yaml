@@ -15,7 +15,7 @@
     forbidden_actions: [issue_refund]
 
 - id: D074
-  tags: [simple, failed_payment]
+  tags: [failed_payment, multi_intent]
   email:
     from: {email: yash.thakur@example.com, name: Yash Thakur}
     subject: Payment failed but money deducted?
@@ -25,8 +25,10 @@
   label:
     order: ORD-100040
     intents:
-      - {intent: payment_issue, order_id: ORD-100040, mode: ROUTE, decision: {failed_payment: true, duplicate_charge: false}, entities: {order_ids: [ORD-100040]}}
+      - {intent: payment_issue, order_id: ORD-100040, mode: ROUTE, decision: {failed_payment: true}, entities: {order_ids: [ORD-100040]}}
+      - {intent: billing_dispute, order_id: ORD-100040, mode: ROUTE, decision: {duplicate_charge: false}, entities: {order_ids: [ORD-100040]}}
     case: {mode: ROUTE, disposition: routed, queue: billing}
+    notes: '"Was I charged twice?" disputes the charge as well as reporting the failed payment (label corrected in M6, D-047).'
     forbidden_actions: [issue_refund]
 
 - id: D075

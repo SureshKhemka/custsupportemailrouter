@@ -50,7 +50,7 @@
     case: {mode: ROUTE, disposition: routed, queue: general}
 
 - id: D154
-  tags: [unsupported_language, secondary_email, vip, high_value]
+  tags: [unsupported_language, secondary_email, vip, high_value, multi_intent]
   email:
     from: {email: sofia.g@example.org, name: Sofia García}
     subject: ¿Cuándo se entregó mi portátil?
@@ -63,6 +63,7 @@
     order: ORD-100031
     intents:
       - {intent: order_status, order_id: ORD-100031, mode: AUTO, decision: {delivery_state: delivered}, entities: {order_ids: [ORD-100031]}}
+      - {intent: other, mode: ROUTE}
     escalation: [vip, high_value]
     case: {mode: ROUTE, disposition: routed, queue: general}
 

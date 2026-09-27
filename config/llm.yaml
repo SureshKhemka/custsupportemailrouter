@@ -1,11 +1,14 @@
 llm:
   # CF-2: switching provider is config only. LM Studio and OpenRouter share the
-  # OpenAI-compatible adapter; Anthropic has its own.
+  # OpenAI-compatible adapter; Anthropic uses the official SDK.
   providers:
     lmstudio:
       kind: openai_compat
       base_url: http://localhost:1234/v1
       api_key_env: null          # LM Studio needs no key by default
+      # Stops Qwen's thinking mode, which otherwise returns the answer in `reasoning_content`
+      # and is slower (measured in M6). Ignored by models without a thinking mode.
+      extra: {reasoning_effort: none}
     openrouter:
       kind: openai_compat
       base_url: https://openrouter.ai/api/v1
@@ -18,17 +21,18 @@ llm:
   # Defaults applied to every step unless the step overrides them.
   defaults:
     temperature: 0.0
-    max_tokens: 1024
-    timeout_s: 120
+    max_tokens: 1500
+    timeout_s: 180
     retries: 2
+    concurrency: 2
 
-  # Model per LLM step (CF-1). Decision D-003: Qwen 3.8 27B served by LM Studio.
+  # Model per LLM step (CF-1). D-003: Qwen 3.8 27B on LM Studio.
   # Model id as LM Studio exposes it (https://lmstudio.ai/models/qwen/qwen3.8-27b).
   steps:
     understand:
       provider: lmstudio
       model: qwen/qwen3.8-27b
-      prompt_version: v1
+      prompt_version: v3        # M6: v2 refund vs refund_status, chargeback threat, anger, side remarks; v3 threats = abuse
     summarize:
       provider: lmstudio
       model: qwen/qwen3.8-27b
@@ -39,11 +43,20 @@ llm:
       prompt_version: v1
       temperature: 0.3
     judge:
-      # EV-8: the judge is configured separately so it can be pointed at a different model.
+      # EV-8: the judge is configured separately; point it at a different model family when possible.
       provider: lmstudio
-      model: qwen/qwen3.8-27b
+      model: google/gemma-4-31b
       prompt_version: v1
+
+  # Record / replay LLM outputs (EV-1, NF-2). Files live in paths.recordings/<name>.jsonl.
+  recording:
+    mode: "off"            # off | record | replay (quoted: bare off is YAML for false)
+    name: default
 
   # Cost estimates (LL-5), USD per million tokens. Local models cost 0.
   pricing:
     qwen/qwen3.8-27b: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+    google/gemma-4-31b: {input_per_mtok: 0.0, output_per_mtok: 0.0}
+    claude-opus-5: {input_per_mtok: 5.0, output_per_mtok: 25.0}
+    claude-sonnet-5: {input_per_mtok: 2.0, output_per_mtok: 10.0}
+    claude-haiku-4-5: {input_per_mtok: 1.0, output_per_mtok: 5.0}

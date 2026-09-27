@@ -83,7 +83,8 @@ def test_local_yaml_can_be_skipped(root: Path) -> None:
 def test_eval_overlay_switches_provider_without_code(root: Path) -> None:
     cfg = load(root, root / "config/eval/anthropic.yaml").settings
     assert cfg.llm.steps["understand"].provider == "anthropic"
-    assert cfg.llm.steps["understand"].max_tokens == 1024  # defaults still applied
+    assert cfg.llm.steps["understand"].max_tokens == cfg.llm.defaults["max_tokens"]  # defaults still applied
+    assert "reasoning_effort" not in cfg.llm.steps["understand"].extra  # no LM Studio fields leak to Anthropic
 
 
 # --------------------------------------------------------------------------- FR-19 invariants

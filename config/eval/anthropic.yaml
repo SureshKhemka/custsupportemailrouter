@@ -1,7 +1,8 @@
-# Eval overlay example (EV-3): run every LLM step on Anthropic models instead of the local Qwen.
+# Eval overlay (EV-3): run the LLM steps on Anthropic models instead of the local Qwen.
+# Requires ANTHROPIC_API_KEY. Current Claude models reject sampling parameters, so temperature is unset.
 llm:
   steps:
-    understand: {provider: anthropic, model: claude-sonnet-5}
-    summarize:  {provider: anthropic, model: claude-haiku-4-5-20251001}
-    compose:    {provider: anthropic, model: claude-sonnet-5}
-    judge:      {provider: anthropic, model: claude-opus-5-5}
+    understand: {provider: anthropic, model: claude-opus-5, temperature: null, extra: {output_config: {effort: low}}, concurrency: 8}
+    summarize:  {provider: anthropic, model: claude-opus-5, temperature: null, extra: {output_config: {effort: low}}, concurrency: 8}
+    compose:    {provider: anthropic, model: claude-opus-5, temperature: null, extra: {output_config: {effort: medium}}, concurrency: 8}
+    judge:      {provider: anthropic, model: claude-sonnet-5, temperature: null, concurrency: 8}

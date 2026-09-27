@@ -48,6 +48,8 @@ class CaseInput:
     injection: bool = False
     duplicate: bool = False  # same message id seen before (FR-2)
     merged: bool = False  # near-duplicate merged into an open case (FR-3)
+    uncertain: bool = False  # some intent below its confidence threshold (FR-15)
+    understanding_failed: bool = False  # no valid LLM output after retries (LL-3)
 
 
 @dataclass(frozen=True)
@@ -73,6 +75,8 @@ def decide_case(inp: CaseInput, cfg: Settings) -> CaseHandling:
         return CaseHandling("CLOSE", "duplicate_ignored", None, False, {})
     if inp.merged:
         return CaseHandling("CLOSE", "merged", None, False, {})
+    if inp.understanding_failed:  # LL-3: degrade to a human, never to a guess
+        return CaseHandling("ROUTE", "routed", "general", False, {}, flags=("understanding_failed",))
 
     intents = [i for i in inp.intents if i.intent != "spam_or_auto"] or list(inp.intents)
     if not intents:
@@ -81,7 +85,7 @@ def decide_case(inp: CaseInput, cfg: Settings) -> CaseHandling:
     for i in intents:  # the same intent may appear for several orders; keep the strictest
         m = intent_mode(i.intent, i.conditions, cfg)
         modes[i.intent] = strictest([modes[i.intent], m]) if i.intent in modes else m
-    if set(modes) == {"spam_or_auto"}:
+    if set(modes) == {"spam_or_auto"} and not inp.uncertain:  # an uncertain "spam" is never dropped
         return CaseHandling("CLOSE", "closed_spam", None, False, modes)
 
     mode = strictest(list(modes.values()))
@@ -91,6 +95,9 @@ def decide_case(inp: CaseInput, cfg: Settings) -> CaseHandling:
     if not inp.language_supported:
         mode = strictest([mode, "ROUTE"])
         flags.append("unsupported_language")
+    if inp.uncertain:  # FR-15: a human sees the model's best guess
+        mode = strictest([mode, "ROUTE"])
+        flags.append("uncertain_intent")
 
     escalate = bool(inp.signals) or (inp.injection and cfg.handling.injection.on_detect == "escalate")
     if inp.injection:

@@ -121,9 +121,15 @@ def _router(loaded: LoadedConfig, now: str | None):
     from router.pipeline.runner import Router
     from router.store.db import Store
 
+    from router.llm import LLMClient
+    from router.pipeline.understanding import LLMUnderstander
+
     clock = FixedClock(datetime.fromisoformat(now)) if now else make_clock(loaded.settings.clock.fixed_now)
     store = Store(loaded.settings.paths.db_dir / "router.db")
-    return Router(loaded, store, clock), store
+    router = Router(loaded, store, clock)
+    # Every model call lands in the case's audit trail (FR-39, LL-5).
+    router.understander = LLMUnderstander(LLMClient(loaded, on_call=router.record_llm_call), loaded.settings)
+    return router, store
 
 
 NowOpt = Annotated[str | None, typer.Option(help="Pin 'now' (ISO-8601 with offset); overrides clock.fixed_now.")]
@@ -184,6 +190,48 @@ def case(case_id: str, config: OverlayOpt = None) -> None:
     typer.echo(json.dumps(c, indent=2))
     for e in store.events(case_id):
         typer.echo(f"{e['seq']:>5} {e['at']} {e['step_id'] or '-':<32} {e['kind']}: {json.dumps(e['data'])[:160]}")
+
+
+# --------------------------------------------------------------------------- evals
+
+eval_app = typer.Typer(no_args_is_help=True, help="Evaluations (section 9).")
+app.add_typer(eval_app, name="eval")
+
+
+@eval_app.command("understand")
+def eval_understand(
+    config: OverlayOpt = None,
+    split: Annotated[str, typer.Option(help="dev (default) or test. Test is for final measurement only.")] = "dev",
+    mode: Annotated[str, typer.Option(help="live (calls the model, records outputs) or replay (no calls).")] = "live",
+    limit: Annotated[int | None, typer.Option(help="Only the first N records.")] = None,
+    ids: Annotated[str | None, typer.Option(help="Comma-separated record ids.")] = None,
+    concurrency: Annotated[int | None, typer.Option(help="Parallel LLM calls (default: step config).")] = None,
+    recording: Annotated[str, typer.Option(help="Recording file name under paths.recordings.")] = "eval",
+) -> None:
+    """Classification eval: intents, multi-intent, calibration, entities, signals, language, spam (9.3)."""
+    import time
+
+    from router.evals.understand import run_understand_eval
+
+    if mode not in {"live", "replay"} or split not in {"dev", "test"}:
+        err.print("[red]--mode must be live|replay and --split dev|test[/]")
+        raise typer.Exit(code=2)
+    if split == "test":
+        err.print("[yellow]Held-out TEST split: use only for final measurement, never for tuning prompts.[/]")
+    loaded = _load(config)
+    started = time.monotonic()
+
+    def progress(done: int, total: int) -> None:
+        if done == total or done % 10 == 0:
+            err.print(f"  {done}/{total} emails ({time.monotonic() - started:.0f}s)")
+
+    out = run_understand_eval(loaded, split, mode, limit=limit, ids=ids.split(",") if ids else None,
+                              concurrency=concurrency, recording=recording, progress=progress)
+    report = json.loads((out / "report.json").read_text())
+    for k, t in report["targets"].items():
+        status = "[green]PASS[/]" if t["met"] else "[red]FAIL[/]"
+        err.print(f"{status} {k} = {report['headline'][k]} (target {t['op']} {t['target']})")
+    typer.echo(f"Report: {out / 'report.md'}")
 
 
 if __name__ == "__main__":

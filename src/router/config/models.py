@@ -114,6 +114,8 @@ class ProviderConfig(Strict):
     base_url: str
     # Name of the environment variable holding the key -- never the key itself (CF-3).
     api_key_env: str | None = None
+    # Request fields sent on every call to this provider (merged under the step's `extra`).
+    extra: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("api_key_env")
     @classmethod
@@ -130,10 +132,22 @@ class StepConfig(Strict):
     provider: str
     model: str
     prompt_version: str
-    temperature: float = Field(ge=0, le=2)
+    # null = don't send (current Claude models reject sampling parameters).
+    temperature: float | None = Field(default=None, ge=0, le=2)
     max_tokens: int = Field(gt=0)
     timeout_s: float = Field(gt=0)
     retries: int = Field(ge=0, le=10)
+    # Provider-specific request fields merged into the request body,
+    # e.g. {reasoning_effort: none} for LM Studio or {output_config: {effort: low}} for Anthropic.
+    extra: dict[str, Any] = Field(default_factory=dict)
+    # Parallel calls allowed for this step during evals (local servers may serialise anyway).
+    concurrency: int = Field(default=1, ge=1, le=64)
+
+
+class RecordingConfig(Strict):
+    # EV-1 / NF-2: off = call the model; record = call and save outputs; replay = never call, use saved outputs.
+    mode: Literal["off", "record", "replay"] = "off"
+    name: str = Field(default="default", pattern=r"^[A-Za-z0-9_.-]+$")
 
 
 class ModelPricing(Strict):
@@ -146,6 +160,7 @@ class LlmConfig(Strict):
     defaults: dict[str, Any] = Field(default_factory=dict)
     steps: dict[str, StepConfig]
     pricing: dict[str, ModelPricing] = Field(default_factory=dict)
+    recording: RecordingConfig = Field(default_factory=RecordingConfig)
 
     @model_validator(mode="before")
     @classmethod
@@ -161,7 +176,7 @@ class LlmConfig(Strict):
     @field_validator("defaults")
     @classmethod
     def _known_default_keys(cls, v: dict[str, Any]) -> dict[str, Any]:
-        allowed = {"temperature", "max_tokens", "timeout_s", "retries"}
+        allowed = {"temperature", "max_tokens", "timeout_s", "retries", "extra", "concurrency"}
         unknown = set(v) - allowed
         if unknown:
             raise ValueError(f"unknown llm.defaults keys {sorted(unknown)}; allowed: {sorted(allowed)}")

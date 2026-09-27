@@ -20,6 +20,7 @@ from router.clients import Backends, CallRecord
 from router.config import LoadedConfig
 from router.core.clock import Clock
 from router.core.ids import step_id
+from router.llm import LLMCall
 from router.pipeline.identify import Identity, identify
 from router.pipeline.intake import IntakeResult, intake
 from router.pipeline.understanding import Understander, Understanding
@@ -140,10 +141,13 @@ class Router:
             ctx.understanding = self.understander(email)
             u = ctx.understanding
             self.store.append_event(ctx.case_id, ctx.next_step("understand"), "understanding", {
-                "intents": list(u.intents), "item_hints": list(u.item_hints), "language": u.language,
-                "tone": vars(u.tone), "injection": u.injection}, now)
+                "intents": list(u.intents), "uncertain": list(u.uncertain), "item_hints": list(u.item_hints),
+                "language": u.language, "code_mixed": u.code_mixed, "tone": vars(u.tone), "injection": u.injection,
+                "injection_evidence": u.injection_evidence, "order_ids": list(u.order_ids),
+                "details": [vars(d) for d in u.details], "failed": u.failed, "failure": u.failure}, now)
         u = ctx.understanding
-        ident = identify(email, ctx.case_id, ir.order_ids, self.backends, self.store, self.cfg, now,
+        mentioned = list(dict.fromkeys([*ir.order_ids, *(u.order_ids if u else ())]))
+        ident = identify(email, ctx.case_id, mentioned, self.backends, self.store, self.cfg, now,
                          order_bound=u.order_bound if u else True, item_hints=list(u.item_hints) if u else [])
         ctx.identity = ident
         self.store.append_event(ctx.case_id, ctx.next_step("identify"), "identity", _identity_event(ident), now)
@@ -160,6 +164,12 @@ class Router:
         self.store.record_email(message_id=ctx.intake.message_id, case_id=ctx.case_id, sender=e.sender,
                                 received_at=e.received_at, subject=e.subject, source=ctx.source,
                                 order_ids=ctx.intake.order_ids, outcome=outcome, at=ctx.now)
+
+    def record_llm_call(self, call: LLMCall) -> None:
+        """Hook for LLMClient(on_call=...): every model call goes to the audit log (FR-39, LL-5)."""
+        ctx = self._current
+        self.store.append_event(ctx.case_id if ctx else None, ctx.next_step(f"llm-{call.step}") if ctx else None,
+                                "llm_call", asdict(call), ctx.now if ctx else self.clock.now())
 
     def _record_call(self, call: CallRecord) -> None:
         ctx = self._current
