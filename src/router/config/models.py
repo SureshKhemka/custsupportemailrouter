@@ -55,6 +55,8 @@ class AppSection(Strict):
 class ClockConfig(Strict):
     # FR-38 / NF-2: a fixed "now" for deterministic runs. null = real time.
     fixed_now: datetime | None = None
+    # Treat each email as processed at the moment it was received (replaying a dataset as if live).
+    process_at_received_time: bool = False
 
     @field_validator("fixed_now")
     @classmethod
@@ -66,6 +68,9 @@ class ClockConfig(Strict):
 
 class IntakeConfig(Strict):
     near_duplicate_window_minutes: int = Field(gt=0)
+    # Headers / sender names that mark mail as automated (FR-6): closed without calling an LLM.
+    auto_sender_prefixes: list[str] = Field(default_factory=lambda: [
+        "mailer-daemon", "postmaster", "noreply", "no-reply", "donotreply", "do-not-reply"])
 
 
 class SlaConfig(Strict):

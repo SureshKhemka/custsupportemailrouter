@@ -67,6 +67,21 @@ without reseeding), `GET /_admin/calls?since=N`, `GET|PUT /_admin/faults`.
 - **State** persists in `var/mocks/` across restarts; the outbox also writes each message to
   `var/outbox/`.
 
+## Processing the inbox
+
+```bash
+uv run mocks up                                   # terminal 1
+uv run router dataset inbox --split dev           # (optional) fill var/inbox with dataset emails
+uv run router process                             # terminal 2; safe to re-run (duplicates are ignored)
+uv run router cases                               # list cases
+uv run router case <case_id>                      # case record + full audit trail
+```
+
+Stored in `var/db/router.db` (SQLite). The event log is append-only (enforced by triggers),
+payment data is masked before anything is written, and each run records the effective config.
+_Current pipeline: intake → (understand, M6) → identify. Decisions, actions, replies and the
+gate are wired in later milestones._
+
 ## Labelled dataset
 
 `dataset/` holds 289 labelled emails: `dev/` (188) for building and `test/` (101), which is

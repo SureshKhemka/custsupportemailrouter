@@ -111,5 +111,80 @@ def dataset_inbox(
     typer.echo(f"Wrote {len(paths)} email file(s) to {out or loaded.settings.paths.inbox}")
 
 
+# --------------------------------------------------------------------------- processing
+
+
+def _router(loaded: LoadedConfig, now: str | None):
+    from datetime import datetime
+
+    from router.core.clock import FixedClock, make_clock
+    from router.pipeline.runner import Router
+    from router.store.db import Store
+
+    clock = FixedClock(datetime.fromisoformat(now)) if now else make_clock(loaded.settings.clock.fixed_now)
+    store = Store(loaded.settings.paths.db_dir / "router.db")
+    return Router(loaded, store, clock), store
+
+
+NowOpt = Annotated[str | None, typer.Option(help="Pin 'now' (ISO-8601 with offset); overrides clock.fixed_now.")]
+
+
+@app.command("process")
+def process(
+    config: OverlayOpt = None,
+    inbox: Annotated[Path | None, typer.Option(help="Inbox folder (default: paths.inbox).")] = None,
+    now: NowOpt = None,
+) -> None:
+    """Process every email in the inbox. Safe to re-run: seen emails are recognised as duplicates."""
+    from rich.table import Table
+
+    loaded = _load(config)
+    router, store = _router(loaded, now)
+    folder = inbox or loaded.settings.paths.inbox
+    if not folder.is_dir():
+        err.print(f"[red]Inbox folder not found: {folder}[/]")
+        raise typer.Exit(code=2)
+    summary = router.process_inbox(folder)
+    table = Table("outcome", "count", title=f"Run {summary.run_id}")
+    for k, v in sorted(summary.outcomes.items()):
+        table.add_row(k, str(v))
+    Console().print(table)
+    for source, error in summary.failures:
+        err.print(f"[red]failed[/] {source}: {error}")
+    store.close()
+
+
+@app.command("cases")
+def cases(config: OverlayOpt = None, stage: Annotated[str | None, typer.Option()] = None) -> None:
+    """List cases in the store."""
+    from rich.table import Table
+
+    from router.store.db import Store
+
+    loaded = _load(config)
+    store = Store(loaded.settings.paths.db_dir / "router.db")
+    table = Table("case", "sender", "customer", "order", "stage", "disposition")
+    for c in store.list_cases(**({"stage": stage} if stage else {})):
+        table.add_row(c["case_id"], c["sender"], c["customer_id"] or "-", c["primary_order_id"] or "-", c["stage"],
+                      c["disposition"] or "-")
+    Console().print(table)
+
+
+@app.command("case")
+def case(case_id: str, config: OverlayOpt = None) -> None:
+    """Show one case and its audit trail."""
+    from router.store.db import Store
+
+    loaded = _load(config)
+    store = Store(loaded.settings.paths.db_dir / "router.db")
+    c = store.get_case(case_id)
+    if not c:
+        err.print(f"[red]No case {case_id}[/]")
+        raise typer.Exit(code=1)
+    typer.echo(json.dumps(c, indent=2))
+    for e in store.events(case_id):
+        typer.echo(f"{e['seq']:>5} {e['at']} {e['step_id'] or '-':<32} {e['kind']}: {json.dumps(e['data'])[:160]}")
+
+
 if __name__ == "__main__":
     app()

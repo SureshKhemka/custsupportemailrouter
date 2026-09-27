@@ -24,10 +24,15 @@ app:
 clock:
   # FR-38: fixed "now" for deterministic runs (tests/evals set this). null = real time.
   fixed_now: null
+  # Replay mode: evaluate each email "as of" its received_at (the dataset labels assume this).
+  process_at_received_time: false
 
 intake:
   # FR-3: near-duplicates from the same sender about the same issue within this window merge into one case.
   near_duplicate_window_minutes: 60
+  # Automated mail (FR-6) recognised without an LLM: these sender prefixes, plus Auto-Submitted,
+  # X-Autoreply, Precedence: bulk/junk/list, List-Unsubscribe/List-Id and multipart/report headers.
+  auto_sender_prefixes: [mailer-daemon, postmaster, noreply, no-reply, donotreply, do-not-reply]
 
 sla:
   # FR-37: SLA per category (intent). Cases take the SLA of their strictest intent.

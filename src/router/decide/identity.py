@@ -36,7 +36,7 @@ def ownership(customer: Customer | None, orders: list[Order]) -> Ownership:
 
 @dataclass(frozen=True)
 class OrderResolution:
-    status: Literal["resolved", "ambiguous", "none"]
+    status: Literal["resolved", "ambiguous", "none", "not_needed"]
     order_ids: tuple[str, ...] = ()
     candidates: tuple[str, ...] = field(default=())  # for the clarifying question
 
