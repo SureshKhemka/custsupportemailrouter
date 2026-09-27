@@ -25,7 +25,10 @@ _DATE_PATTERNS = [
     (re.compile(r"\b(\d{1,2})/(\d{1,2})/(\d{4})\b"), "slash"),  # dd/mm/yyyy (Indian convention)
 ]
 _PLACEHOLDER = re.compile(r"\{\{[^}]*\}\}|\{[a-z_][a-z0-9_]*\}|\[[A-Z][A-Z _]{2,}\]|<<[^>]*>>|<[A-Z][A-Z_]{2,}>"
-                          r"|\bX{3,}\b|\bTBD\b|\bINSERT\b")
+                          r"|\bX{3,}\b|\bTBD\b|\bINSERT\b"
+                          # rendering artifacts: Python/Jinja internals leaking into the text
+                          r"|<built-in [^>]*>|<bound method [^>]*>|\bobject at 0x[0-9a-f]+|\{%|%\}|\bUndefined\b"
+                          r"|\(None\)|:\s*None\b|\bNone\.|\bnan\b")
 _GREETING = re.compile(r"^\s*(?:hi|hello|dear|hey)\s+([A-Za-z][a-z]+)", re.I | re.M)
 
 

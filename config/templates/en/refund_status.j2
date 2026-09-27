@@ -1,5 +1,5 @@
 {%- if state == "none" -%}
-I checked order {{ o.order_id }} and there's no refund recorded for it at the moment.
+I checked order {{ o.order_id }} and there's no refund recorded for it at the moment.{% if return_open %} Your return is on record: the refund is made to your original payment method once the returned item is received and checked.{% endif %}
 {%- elif state == "initiated" -%}
 The refund of {{ amount }} for order {{ o.order_id }} has been initiated to your original payment method.
 {%- elif state == "processed" -%}

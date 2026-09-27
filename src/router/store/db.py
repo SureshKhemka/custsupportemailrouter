@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS runs (
 CREATE TABLE IF NOT EXISTS cases (
     case_id TEXT PRIMARY KEY, thread_root TEXT NOT NULL, sender TEXT NOT NULL, customer_id TEXT,
     status TEXT NOT NULL, stage TEXT NOT NULL, disposition TEXT, mode TEXT, queue TEXT, priority INTEGER DEFAULT 0,
-    language TEXT, sla_due TEXT, primary_order_id TEXT, intents TEXT, flags TEXT,
+    language TEXT, sla_due TEXT, primary_order_id TEXT, intents TEXT, flags TEXT, summary TEXT,
     created_at TEXT NOT NULL, updated_at TEXT NOT NULL
 );
 CREATE TABLE IF NOT EXISTS emails (
@@ -56,8 +56,8 @@ CREATE TABLE IF NOT EXISTS actions (
 """
 
 CASE_FIELDS = {"customer_id", "status", "stage", "disposition", "mode", "queue", "priority", "language", "sla_due",
-               "primary_order_id", "intents", "flags"}
-_JSON_FIELDS = {"intents", "flags"}
+               "primary_order_id", "intents", "flags", "summary"}
+_JSON_FIELDS = {"intents", "flags", "summary"}
 
 
 @dataclass(frozen=True)
@@ -81,6 +81,10 @@ class Store:
         self._lock = threading.RLock()
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.executescript(SCHEMA)
+        try:  # databases created before M8 lack the summary column
+            self._conn.execute("ALTER TABLE cases ADD COLUMN summary TEXT")
+        except sqlite3.OperationalError:
+            pass
 
     @contextmanager
     def tx(self) -> Iterator[sqlite3.Connection]:

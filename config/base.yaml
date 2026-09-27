@@ -8,6 +8,7 @@ includes:
   - taxonomy.yaml
   - routing_matrix.yaml
   - handling.yaml
+  - replies.yaml
   - escalation.yaml
   - policy.yaml
   - services.yaml

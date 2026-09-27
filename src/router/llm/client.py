@@ -4,7 +4,8 @@
   step's `retries`; after that the caller gets LLMFailure and routes the case to a human (LL-3).
 - Every call is reported to `on_call` with model, prompt version, input, output, tokens, latency
   and estimated cost (FR-39, LL-5).
-- Recording modes: off | record | replay (EV-1). Replay never calls a model.
+- Recording modes: off | record | replay (EV-1). Replay never calls a model; record reuses any recorded
+  output for the same input and calls the model only for new inputs (so reruns are incremental).
 """
 
 from __future__ import annotations
@@ -79,9 +80,10 @@ class LLMClient:
 
     def run(self, step: str, output_model: type[T], variables: dict[str, Any], *,
             enums: dict[str, list[str]] | None = None,
-            validate: Callable[[T], list[str]] | None = None) -> LLMResult[T]:
+            validate: Callable[[T], list[str]] | None = None, prompt_name: str | None = None) -> LLMResult[T]:
+        """`prompt_name` lets one step (model config) use another prompt folder, e.g. judge -> judge_summary."""
         sc = self.cfg.llm.steps[step]
-        prompt = load_prompt(self.cfg.paths.prompts, step, sc.prompt_version)
+        prompt = load_prompt(self.cfg.paths.prompts, prompt_name or step, sc.prompt_version)
         system, user = prompt.render(**variables)
         schema = strict_schema(output_model, enums)
         key = hashlib.sha256(json.dumps([sc.provider, sc.model, prompt.digest, system, user, schema],
@@ -90,8 +92,8 @@ class LLMClient:
         base = dict(step=step, provider=sc.provider, model=sc.model, prompt_version=sc.prompt_version,
                     prompt_digest=prompt.digest, system=system, user=user)
 
-        if self.mode == "replay":
-            rec = self.recordings.get(key) if self.recordings else None
+        rec = self.recordings.get(key) if self.recordings and self.mode in {"replay", "record"} else None
+        if self.mode == "replay" or rec is not None:  # record mode reads through: reruns only call for what's missing
             if rec is None:
                 call = LLMCall(**base, output=None, ok=False, error="no recording for this input", attempts=0,
                                input_tokens=0, output_tokens=0, latency_ms=0.0, cost_usd=0.0, replayed=True)

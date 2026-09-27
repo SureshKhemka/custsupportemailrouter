@@ -158,3 +158,25 @@ def test_placeholders_block(facts, ph) -> None:
 ])
 def test_policy_statements(facts, reply, blocked) -> None:
     assert ("consistent_with_policy" in fails(reply, facts)) is blocked
+
+
+@pytest.mark.parametrize("junk", ["<built-in method items of dict object at 0x108caca80>", "{% if x %}",
+                                  "order (None)", "status: None", "Undefined"])
+def test_rendering_artifacts_are_blocked(facts, junk) -> None:
+    assert "no_placeholders" in fails(f"Hi Kavya, your order {junk} is on its way.", facts)
+
+
+@pytest.mark.parametrize("claim", [
+    "Hi Kavya, we have also cancelled order ORD-100004 as requested.",
+    "Hi Kavya, I've gone ahead and cancelled your order.",
+    "Hi Kavya, your order is now cancelled.",
+    "Hi Kavya, I have already created a return for ORD-100004.",
+    "Hi Kavya, the refund has now been credited.",
+    "Hi Kavya, we've successfully shipped a replacement.",
+])
+def test_claims_with_adverbs_or_first_person_are_checked(facts, claim) -> None:
+    assert "claimed_actions_succeeded" in fails(claim, facts)
+
+
+def test_policy_photo_threshold_may_be_quoted(facts) -> None:
+    assert "facts_match_backend" not in fails("Hi Kavya, we need a photo for items above ₹2,000.", facts)

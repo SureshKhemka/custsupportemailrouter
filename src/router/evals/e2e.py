@@ -63,7 +63,8 @@ def run_e2e_eval(loaded: LoadedConfig, split: str, understanding: str = "oracle"
             groups[lr.record.group_id].append(lr)
 
     rows: list[dict[str, Any]] = []
-    hard: dict[str, list[str]] = {f"HG-{i}": [] for i in (1, 2, 3, 4, 6, 7, 8, 9)} | {"EV-11": []}
+    # BROKEN-REPLY: a sent reply with template/code artifacts (not a spec hard gate, but never acceptable)
+    hard: dict[str, list[str]] = {f"HG-{i}": [] for i in (1, 2, 3, 4, 6, 7, 8, 9)} | {"EV-11": [], "BROKEN-REPLY": []}
     faults = Counter()
     secrets = [v for p in cfg.llm.providers.values() if p.api_key_env and (v := os.environ.get(p.api_key_env))]
     done = 0
@@ -205,7 +206,7 @@ def _hard_gates(group: list[LoadedRecord], rows: list[dict], clients: dict[str, 
             for m in sent:
                 res = run_gate(m["body"], facts)
                 for check, key in (("facts_match_backend", "HG-6"), ("consistent_with_policy", "HG-6"),
-                                   ("claimed_actions_succeeded", "HG-7")):
+                                   ("claimed_actions_succeeded", "HG-7"), ("no_placeholders", "BROKEN-REPLY")):
                     if check in res.failures:
                         hard[key].append(f"{rid}: {check}: {res.failures[check][0]}")
     blob = "\n".join([str(store.events()), str(outbox)])

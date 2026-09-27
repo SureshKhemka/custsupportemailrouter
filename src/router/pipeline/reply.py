@@ -80,7 +80,7 @@ class Composer:
         if h.disposition == "clarification_requested":
             cands = [o for oid in identity.resolution.candidates if (o := backends.order.get(oid))]
             text = env.get_template("clarify.j2").render(candidates=[
-                {"order_id": o.order_id, "items": self._items(o), "placed": fmt_date(o.placed_at, self.tz)} for o in cands])
+                {"order_id": o.order_id, "products": self._items(o), "placed": fmt_date(o.placed_at, self.tz)} for o in cands])
             return ComposedReply(self._wrap(env, first, [text]), "clarify")
 
         by_intent: dict[tuple[str, str | None], ActionResult] = {(a.intent, a.order_id): a for a in actions}
@@ -96,11 +96,14 @@ class Composer:
                 continue
             order = identity.verified[d.order_id].order if d.order_id in identity.verified else None
             if d.intent in BILLING:
-                parts.append(env.get_template("billing.j2").render(o=self._o(order) if order else None))
+                parts.append(self._billing(env, d, identity, order))
                 continue
             if order is None:
+                if "no_matching_order" in h.flags and not any("no_order.j2" in p for p in parts):
+                    parts.append(env.get_template("no_order.j2").render())
                 continue
-            text = self._intent_part(env, d, order, by_intent.get((d.intent, d.order_id)), now)
+            text = self._intent_part(env, d, order, by_intent.get((d.intent, d.order_id)), now,
+                                     identity.verified[d.order_id])
             if text.strip():
                 parts.append(text)
         if not parts:
@@ -120,13 +123,22 @@ class Composer:
         tz = self.tz
         promised_passed = bool(now and o.promised_delivery_date and
                                o.promised_delivery_date.astimezone(tz).date() < now.astimezone(tz).date())
-        return {"order_id": o.order_id, "items": self._items(o), "carrier": o.carrier or "our courier",
+        # never name a key "items": in Jinja, `o.items` resolves to dict.items (the method), not the key
+        return {"order_id": o.order_id, "products": self._items(o), "carrier": o.carrier or "our courier",
                 "tracking": o.tracking_number, "promised": fmt_date(o.promised_delivery_date, tz),
                 "promised_passed": promised_passed, "delivered": fmt_date(o.delivered_at, tz),
                 "cancelled": fmt_date(o.cancelled_at, tz), "last_update": fmt_date(o.last_tracking_update, tz)}
 
+    def _billing(self, env: Environment, d: IntentDecision, identity: Identity, order: Order | None) -> str:
+        charges = identity.verified[order.order_id].charges if order else []
+        paid = [c for c in charges if c.status == "succeeded"]
+        return env.get_template("billing.j2").render(
+            o=self._o(order) if order else None, duplicate=d.decision.get("duplicate_charge", False),
+            failed=d.decision.get("failed_payment", False), paid=bool(paid),
+            amount=inr(paid[0].amount) if paid else (inr(order.total) if order else None))
+
     def _intent_part(self, env: Environment, d: IntentDecision, order: Order, action: ActionResult | None,
-                     now: datetime) -> str:
+                     now: datetime, facts=None) -> str:
         o = self._o(order, now)
         policy = self.cfg.policy
         lines_text = ", ".join(order.line(l).name + (f" x{q}" if q > 1 else "") for l, q in d.lines) if d.lines else ""
@@ -137,10 +149,14 @@ class Composer:
             return tpl.render(o=o, state=dec["delivery_state"])
         if d.intent == "return_request":
             cats = [order.line(l).category for l, _ in d.lines if order.line(l).category in policy.returns.non_returnable_categories]
+            pickup = next((r.pickup_scheduled_for for r in (facts.returns if facts else [])
+                           if r.status in {"authorised", "picked_up"} and r.pickup_scheduled_for), None)
             return tpl.render(o=o, action=act, reason=dec["reason"], lines_text=lines_text, policy=policy,
-                              category=cats[0] if cats else "these")
+                              category=cats[0] if cats else "these", requested_remedy=dec.get("requested_remedy", "none"),
+                              pickup=fmt_date(pickup, self.tz) if pickup and pickup > now else None)
         if d.intent in {"damaged_item", "wrong_item"}:
             return tpl.render(o=o, remedy=dec["remedy"], reason=dec["reason"], lines_text=lines_text, policy=policy,
+                              requested_remedy=dec.get("requested_remedy", "none"),
                               kind="damaged" if d.intent == "damaged_item" else "wrong",
                               amount=inr(dec["refund_amount"]) if dec.get("refund_amount") else None,
                               photo_threshold=inr(policy.damage.photo_required_above_item_value))
@@ -148,5 +164,7 @@ class Composer:
             returnable = all(l.category not in policy.returns.non_returnable_categories for l in order.items)
             return tpl.render(o=o, action=act, cancellable=dec["cancellable"], returnable=returnable, policy=policy)
         if d.intent == "refund_status":
-            return tpl.render(o=o, state=dec["state"], amount=inr(dec["amount"]) if dec["amount"] else None)
+            return_open = any(r.status in {"authorised", "picked_up", "received"} for r in (facts.returns if facts else []))
+            return tpl.render(o=o, state=dec["state"], amount=inr(dec["amount"]) if dec["amount"] else None,
+                              return_open=return_open or (action is not None))
         return ""

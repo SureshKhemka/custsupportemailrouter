@@ -81,8 +81,9 @@ uv run router case <case_id>                      # case record + full audit tra
 
 Stored in `var/db/router.db` (SQLite). The event log is append-only (enforced by triggers),
 payment data is masked before anything is written, and each run records the effective config.
-Pipeline: intake → understand (LLM) → identify → decide → act → reply (templates) → outbound
-gate → outbox, or a queue for a human. The default operating mode is `shadow` (nothing is sent
+Pipeline: intake → understand (LLM) → identify → decide → act → reply (templates, optionally
+personalised by the LLM, `config/replies.yaml`) → outbound gate → outbox, or a queue for a human
+with an LLM case summary. The default operating mode is `shadow` (nothing is sent
 and no action runs); set `routing.operating_mode.default: live` to act and send to the mock outbox.
 
 ## Labelled dataset
@@ -133,6 +134,13 @@ End to end (whole pipeline against in-process mocks, hard gates, automation rate
 uv run router eval e2e -c config/eval/e2e.yaml                            # label oracle, no LLM
 uv run router eval e2e -c config/eval/e2e.yaml --understanding replay     # recorded LLM outputs
 uv run router eval e2e -c config/eval/e2e.yaml -c config/eval/chaos-heavy.yaml --understanding replay
+```
+
+Replies (fact checks against labels, LLM judge with `config/rubrics/`, template vs personalised,
+agent summaries, judge agreement with `dataset/human_ratings/`):
+
+```bash
+uv run router eval replies -c config/eval/e2e.yaml --concurrency 4
 ```
 
 Reports (JSON + Markdown) go to `var/reports/<kind>/<timestamp>-<split>/`. Each report includes

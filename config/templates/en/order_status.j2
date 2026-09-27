@@ -1,4 +1,4 @@
-{%- set label = "order " ~ o.order_id ~ (" (" ~ o.items ~ ")" if o.items else "") -%}
+{%- set label = "order " ~ o.order_id ~ (" (" ~ o.products ~ ")" if o.products else "") -%}
 {%- if state == "not_shipped" -%}
 Your {{ label }} has been placed and hasn't shipped yet. We'll share tracking details as soon as it does.
 {%- elif state == "in_transit" -%}
@@ -8,7 +8,7 @@ Your {{ label }} is out for delivery with {{ o.carrier }}. Tracking number: {{ o
 {%- elif state == "delayed" -%}
 I'm sorry, your {{ label }} is running later than the promised delivery date of {{ o.promised }}. It is still in transit with {{ o.carrier }}, and you can follow it with tracking number {{ o.tracking }}.
 {%- elif state == "lost" -%}
-I'm sorry, your {{ label }} hasn't had a tracking update since {{ o.last_update }}. A member of our team is looking into it and will update you.
+I'm sorry, it looks like your {{ label }} may have been lost in transit: there has been no tracking update since {{ o.last_update }}. We'll arrange a replacement or a refund, including any shipping charge, and confirm the details with you.
 {%- elif state == "delivered" -%}
 Our records show your {{ label }} was delivered on {{ o.delivered }}.
 {%- elif state == "cancelled" -%}

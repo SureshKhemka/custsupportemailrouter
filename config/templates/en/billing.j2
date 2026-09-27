@@ -1,1 +1,9 @@
-Thanks for letting us know about the charges on {{ "order " ~ o.order_id if o else "your account" }}. A colleague from our billing team is checking the payment records and will reply to you.
+{%- if o and duplicate -%}
+I can see two successful payments of {{ amount }} for order {{ o.order_id }}. A colleague from our billing team is checking this and will confirm the next step with you.
+{%- elif o and failed and paid -%}
+I can see that one payment attempt for order {{ o.order_id }} failed and a later payment of {{ amount }} went through. A colleague from our billing team will confirm the details with you.
+{%- elif o and failed -%}
+I can see that the payment for order {{ o.order_id }} did not go through. A colleague from our billing team will help you complete it.
+{%- else -%}
+Thanks for letting us know about the payment for {{ "order " ~ o.order_id if o else "your account" }}. A colleague from our billing team is checking the payment records and will reply to you.
+{%- endif -%}

@@ -106,23 +106,29 @@ def _default_year(f: CaseFacts) -> int:
 # --------------------------------------------------------------------------- claimed actions
 
 
+# Adverbs that may sit inside a claim: "we have ALSO cancelled", "has NOW been refunded", "I've GONE AHEAD AND created".
+_ADV = r"(?:(?:also|now|already|successfully|just|gone\s+ahead\s+and|went\s+ahead\s+and)\s+)*"
+_WE = r"\b(?:we|i)(?:'ve|\s+have)\s+" + _ADV
 _CLAIMS = {
     "issue_refund": [
-        re.compile(r"\brefund\w*\b[^.]*?\b(?:has|have)\s+been\s+(issued|processed|initiated|credited|completed|sent|paid|refunded)\b", re.I),
-        re.compile(r"\brefund\w*\b[^.]*?\b(?:was|is\s+now)\s+(issued|processed|initiated|credited|completed|sent|paid)\b", re.I),
-        re.compile(r"\bwe(?:'ve|\s+have)\s+(refunded|issued|processed|initiated|credited)\b", re.I),
-        re.compile(r"\b(?:has|have)\s+been\s+(refunded|credited)\b", re.I),
+        re.compile(r"\brefund\w*\b[^.]*?\b(?:has|have)\s+" + _ADV + r"been\s+" + _ADV
+                   + r"(issued|processed|initiated|credited|completed|sent|paid|refunded)\b", re.I),
+        re.compile(r"\brefund\w*\b[^.]*?\b(?:was|is\s+now)\s+" + _ADV + r"(issued|processed|initiated|credited|completed|sent|paid)\b", re.I),
+        re.compile(_WE + r"(refunded|issued|processed|initiated|credited)\b", re.I),
+        re.compile(r"\b(?:has|have)\s+" + _ADV + r"been\s+" + _ADV + r"(refunded|credited)\b", re.I),
     ],
     "create_return": [
-        re.compile(r"\b(?:we(?:'ve|\s+have)\s+)?(?:created|set\s+up|arranged|raised|initiated|approved|authori[sz]ed)\s+(?:a|the|your)\s+return\b", re.I),
-        re.compile(r"\breturn\b[^.]*?\b(?:has|have)\s+been\s+(?:created|approved|authori[sz]ed|initiated|set\s+up|arranged)\b", re.I),
+        re.compile(r"(?:" + _WE + r")?(?:created|set\s+up|arranged|raised|initiated|approved|authori[sz]ed)\s+(?:a|the|your)\s+return\b", re.I),
+        re.compile(r"\breturn\b[^.]*?\b(?:has|have)\s+" + _ADV + r"been\s+" + _ADV
+                   + r"(?:created|approved|authori[sz]ed|initiated|set\s+up|arranged)\b", re.I),
     ],
     "create_replacement": [
-        re.compile(r"\b(?:we(?:'ve|\s+have)\s+)?(?:shipped|sent|dispatched|created|arranged|placed)\s+(?:a|the|your)\s+(?:new\s+)?replacement\b", re.I),
-        re.compile(r"\breplacement\b[^.]*?\b(?:has|have)\s+been\s+(?:shipped|sent|dispatched|created|arranged)\b", re.I),
+        re.compile(r"(?:" + _WE + r")?(?:shipped|sent|dispatched|created|arranged|placed)\s+(?:a|the|your)\s+(?:new\s+)?replacement\b", re.I),
+        re.compile(r"\breplacement\b[^.]*?\b(?:has|have)\s+" + _ADV + r"been\s+" + _ADV + r"(?:shipped|sent|dispatched|created|arranged)\b", re.I),
     ],
     "cancel_order": [
-        re.compile(r"\b(?:has|have)\s+been\s+cancell?ed\b|\bwas\s+cancell?ed\b|\bwe(?:'ve|\s+have)\s+cancell?ed\b", re.I),
+        re.compile(r"\b(?:has|have)\s+" + _ADV + r"been\s+" + _ADV + r"cancell?ed\b|\bwas\s+" + _ADV + r"cancell?ed\b"
+                   r"|" + _WE + r"cancell?ed\b|\bis\s+now\s+cancell?ed\b", re.I),
     ],
 }
 _PROCESSED_WORDS = {"processed", "credited", "completed", "paid", "refunded"}

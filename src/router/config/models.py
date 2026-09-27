@@ -315,6 +315,23 @@ class HandlingConfig(Strict):
     ambiguous_order: AmbiguousOrderHandling
 
 
+# --------------------------------------------------------------------------- replies / summaries
+
+
+class PersonaliseConfig(Strict):
+    auto: bool
+    draft: bool
+    per_intent: dict[str, bool] = Field(default_factory=dict)
+
+
+class RepliesConfig(Strict):
+    personalise: PersonaliseConfig
+
+
+class SummariesConfig(Strict):
+    enabled: bool
+
+
 # --------------------------------------------------------------------------- escalation / policy
 
 
@@ -448,6 +465,8 @@ class Settings(Strict):
     taxonomy: TaxonomyConfig
     routing: RoutingConfig
     handling: HandlingConfig
+    replies: RepliesConfig
+    summaries: SummariesConfig
     escalation: EscalationConfig
     policy: PolicyConfig
     services: dict[str, ServiceConfig]
@@ -475,6 +494,7 @@ class Settings(Strict):
             )
         for where, keys in {
             "handling.escalation.per_intent": set(self.handling.escalation.per_intent),
+            "replies.personalise.per_intent": set(self.replies.personalise.per_intent),
             "routing.operating_mode.per_intent": set(self.routing.operating_mode.per_intent),
             "sla.per_intent": set(self.sla.per_intent),
         }.items():

@@ -1,0 +1,12 @@
+replies:
+  # FR-29: whether an LLM personalises the templated reply, per case type. The LLM may only
+  # rephrase: every fact from the template must survive (checked in code) and the result goes
+  # through the outbound gate. On any problem the template is used instead.
+  personalise:
+    auto: false          # automatic replies: templates only
+    draft: true          # drafts for a human to approve: personalised
+    per_intent: {}       # override by intent, e.g. {order_status: true}
+
+summaries:
+  # LL-1: a short, fact-grounded summary for the agent on every case that reaches a human.
+  enabled: true

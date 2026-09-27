@@ -54,6 +54,7 @@ class CaseFacts:
                 amounts.add(sum(r.amount for r in refunds))
             amounts |= {c.amount for c in self.charges.get(o.order_id, [])}
         amounts |= {a.amount for a in self.actions if a.amount is not None and a.status == "succeeded"}
+        amounts.add(self.policy.damage.photo_required_above_item_value)  # policy thresholds quoted to customers
         return {round(a, 2) for a in amounts if a}
 
     def dates(self) -> dict[str, set[date]]:

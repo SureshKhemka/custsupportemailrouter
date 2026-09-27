@@ -128,7 +128,12 @@ def _router(loaded: LoadedConfig, now: str | None):
     store = Store(loaded.settings.paths.db_dir / "router.db")
     router = Router(loaded, store, clock)
     # Every model call lands in the case's audit trail (FR-39, LL-5).
-    router.understander = LLMUnderstander(LLMClient(loaded, on_call=router.record_llm_call), loaded.settings)
+    from router.pipeline.personalise import Personaliser, Summarizer
+
+    llm = LLMClient(loaded, on_call=router.record_llm_call)
+    router.understander = LLMUnderstander(llm, loaded.settings)
+    router.personaliser = Personaliser(llm, loaded.settings)
+    router.summarizer = Summarizer(llm, loaded.settings)
     return router, store
 
 
@@ -258,6 +263,33 @@ def eval_e2e(
         err.print(f"{'[green]PASS[/]' if v['passed'] else '[red]FAIL[/]'} {k}" + ("" if v["passed"] else f": {v['violations'][:3]}"))
     for k, t in report["targets"].items():
         err.print(f"{'[green]PASS[/]' if t['met'] else '[red]FAIL[/]'} {k} = {report['headline'][k]} (target {t['op']} {t['target']})")
+    typer.echo(f"Report: {out / 'report.md'}")
+
+
+@eval_app.command("replies")
+def eval_replies(
+    config: OverlayOpt = None,
+    split: Annotated[str, typer.Option(help="dev (default) or test.")] = "dev",
+    understanding: Annotated[str, typer.Option(help="replay (recorded LLM, default) or oracle (labels).")] = "replay",
+    mode: Annotated[str, typer.Option(help="live (calls models, records) or replay.")] = "live",
+    ids: Annotated[str | None, typer.Option(help="Comma-separated record ids.")] = None,
+    concurrency: Annotated[int | None, typer.Option(help="Parallel LLM calls.")] = None,
+) -> None:
+    """Reply evals: fact checks (EV-6), LLM judge (EV-7), judge agreement (EV-8), agent summaries."""
+    import time
+
+    from router.evals.replies import run_replies_eval
+
+    loaded = _load(config)
+    started = time.monotonic()
+    out = run_replies_eval(loaded, split, understanding=understanding, mode=mode, ids=ids.split(",") if ids else None,
+                           concurrency=concurrency,
+                           progress=lambda msg: err.print(f"  [{time.monotonic() - started:.0f}s] {msg}"))
+    report = json.loads((out / "report.json").read_text())
+    for k, t in report["targets"].items():
+        err.print(f"{'[green]PASS[/]' if t['met'] else '[red]FAIL[/]'} {k} = {report['headline'][k]} (target {t['op']} {t['target']})")
+    err.print(f"judge agreement (vs {report['agreement']['rater']}): within ±1 = "
+              f"{report['headline']['judge_agreement_within_1']}, reliable = {report['headline']['judge_reliable']}")
     typer.echo(f"Report: {out / 'report.md'}")
 
 

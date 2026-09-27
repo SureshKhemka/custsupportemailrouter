@@ -69,31 +69,56 @@ def select_lines(order, hints: list[str]) -> list[P.LineRequest]:
 # --------------------------------------------------------------------------- per-intent decisions
 
 
-def _order_for_intent(intent_order_ids: tuple[str, ...], identity: Identity) -> str | None:
-    for oid in intent_order_ids:
-        if oid in identity.verified:
-            return oid
-    return identity.primary_order_id if identity.primary_order_id in identity.verified else None
+def _targets(details: list[tuple[str, tuple[str, ...], list[str], str]], identity: Identity) -> list[list[str | None]]:
+    """Which verified order(s) each intent mention is about.
+
+    - The same intent mentioned several times gets distinct orders ("where are A and B?").
+    - One mention naming several orders covers each of them, except orders another intent
+      names on its own ("return A, and where is B?" keeps A for the return and B for the status).
+    """
+    verified = identity.verified if identity.is_verified else {}
+    primary = identity.primary_order_id if identity.primary_order_id in verified else None
+    ids_of = [[o for o in ids if o in verified] for _, ids, _, _ in details]
+    owned_by_other = {}
+    for (intent, *_), ids in zip(details, ids_of):
+        if len(ids) == 1:
+            owned_by_other.setdefault(ids[0], set()).add(intent)
+    out: list[list[str | None]] = []
+    used: dict[str, set[str]] = {}
+    for (intent, *_), ids in zip(details, ids_of):
+        taken = used.setdefault(intent, set())
+        if not ids:
+            out.append([primary])
+            continue
+        same_intent_count = sum(1 for d in details if d[0] == intent)
+        if same_intent_count > 1:  # distinct order per repeated mention
+            pick = next((o for o in ids if o not in taken), ids[0])
+            taken.add(pick)
+            out.append([pick])
+        else:
+            mine = [o for o in ids if not (owned_by_other.get(o, set()) - {intent})]
+            out.append(mine or ids[:1])
+    return out
 
 
 def decide_intents(u: Understanding, identity: Identity, email: InboundEmail, backends: Backends, cfg: Settings,
                    now: datetime) -> list[IntentDecision]:
     tz = ZoneInfo(cfg.app.timezone)
     out: list[IntentDecision] = []
-    details = list(u.details) or []
-    per_intent = [(d.intent, d.order_ids, list(d.items)) for d in details] or [(i, (), list(u.item_hints))
-                                                                             for i in u.intents]
+    details = [(d.intent, d.order_ids, list(d.items), d.remedy) for d in u.details] or \
+              [(i, (), list(u.item_hints), "none") for i in u.intents]
     seen: set[tuple[str, str | None]] = set()
-    for intent, order_ids, items in per_intent:
-        oid = _order_for_intent(order_ids, identity) if identity.is_verified else None
-        if (intent, oid) in seen:
-            continue
-        seen.add((intent, oid))
-        d = IntentDecision(intent, oid)
-        facts: OrderFacts | None = identity.verified.get(oid) if oid else None
-        if facts is not None:
-            _decide_one(d, facts, items or list(u.item_hints), email, backends, cfg, now, tz)
-        out.append(d)
+    for (intent, _, items, remedy), targets in zip(details, _targets(details, identity)):
+        for oid in targets:
+            if (intent, oid) in seen:
+                continue
+            seen.add((intent, oid))
+            d = IntentDecision(intent, oid)
+            facts: OrderFacts | None = identity.verified.get(oid) if oid else None
+            if facts is not None:
+                _decide_one(d, facts, items or list(u.item_hints), email, backends, cfg, now, tz)
+                d.decision["requested_remedy"] = remedy
+            out.append(d)
     return out
 
 
@@ -124,7 +149,8 @@ def _decide_one(d: IntentDecision, f: OrderFacts, hints: list[str], email: Inbou
         kind = "damaged" if d.intent == "damaged_item" else "wrong_item"
         r = P.damage_remedy(order, lines, kind, now, stock, email.has_photos, cfg.policy, tz)  # type: ignore[arg-type]
         d.decision = {"remedy": r.remedy, "reason": r.reason, "photo_required": r.photo_required,
-                      "refund_amount": r.refund_amount, "days_since_delivery": r.days_since_delivery}
+                      "refund_amount": r.refund_amount, "days_since_delivery": r.days_since_delivery,
+                      "photos_attached": email.has_photos, "in_stock": stock}
         d.lines = [(l.line_id, l.qty) for l in lines]
         if r.remedy == "replacement":
             d.action = {"type": "create_replacement", "order_id": order.order_id, "lines": d.lines, "reason": kind}

@@ -27,7 +27,9 @@ from router.pipeline.actions import ActionResult, run_actions
 from router.pipeline.decide_step import Decision, decide
 from router.pipeline.deliver import Outcome, deliver, gate_facts
 from router.pipeline.intake import IntakeResult, intake
-from router.pipeline.reply import Composer
+from router.pipeline.personalise import Personaliser, Summarizer, should_personalise
+from router.pipeline.reply import ComposedReply, Composer
+from router.gate import CaseFacts, run_gate
 from router.pipeline.understanding import Understander, Understanding
 from router.schemas.email import InboundEmail
 from router.store.db import Store
@@ -45,6 +47,9 @@ class CaseContext:
     decision: Decision | None = None
     actions: list[ActionResult] = field(default_factory=list)
     outcome: Outcome | None = None
+    reply: ComposedReply | None = None
+    facts: CaseFacts | None = None
+    summary: dict | None = None
     stage: str = "received"
     step_seq: int = 0
 
@@ -69,6 +74,8 @@ class Router:
         self.loaded, self.cfg, self.store, self.clock = loaded, loaded.settings, store, clock
         self.understander = understander
         self.composer = Composer(self.cfg)
+        self.personaliser: Personaliser | None = None  # wired by the CLI; evals opt in
+        self.summarizer: Summarizer | None = None
         self._current: CaseContext | None = None
         self.backends = Backends.from_config(self.cfg, on_call=self._record_call, http_clients=http_clients,
                                              sleep=(lambda _s: None) if http_clients else None)
@@ -213,16 +220,40 @@ class Router:
                                 {"actions": [vars(a) for a in actions], "any_failed": failed}, now)
         reply = self.composer.compose(d, u, ident, actions, self.backends, now)
         facts = gate_facts(u, ident, d, actions, email, reply.text, self.backends, self.cfg, now) if reply else None
+        if reply and self.personaliser and should_personalise(reply.kind, u.intents, self.cfg):
+            p = self.personaliser(reply.text, email, u.language)
+            if p.used_llm:
+                p_facts = gate_facts(u, ident, d, actions, email, p.text, self.backends, self.cfg, now)
+                p_gate = run_gate(p.text, p_facts)
+                if p_gate.passed:
+                    reply, facts = ComposedReply(p.text, reply.kind), p_facts
+                self.store.append_event(ctx.case_id, ctx.next_step("personalise"), "personalisation", {
+                    "used": p_gate.passed, "candidate": p.text, "gate": p_gate.failures}, now)
+            else:
+                self.store.append_event(ctx.case_id, ctx.next_step("personalise"), "personalisation",
+                                        {"used": False, "note": p.note}, now)
+        ctx.reply, ctx.facts = reply, facts
         out, event = deliver(ctx.case_id, email, d, reply, facts, failed, self.backends, self.store, self.cfg, now)
         ctx.outcome = out
         self.store.append_event(ctx.case_id, ctx.next_step("deliver"), "reply", {**event, "sent": out.sent,
                                 "final_mode": out.mode, "final_disposition": out.disposition}, now)
         closed = out.disposition in {"auto_replied", "identity_reply", "clarification_requested"} and out.sent
+        summary = None
+        if not closed and self.summarizer and self.cfg.summaries.enabled:  # LL-1: help the agent
+            s_facts = facts or gate_facts(u, ident, d, actions, email, "", self.backends, self.cfg, now)
+            reason = f"mode {out.mode}, queue {out.queue}, flags {list(out.flags)}, signals {sorted(d.signals)}"
+            decisions = [{"intent": i.intent, "order_id": i.order_id, "decision": i.decision} for i in d.intents]
+            got = self.summarizer(email, s_facts, reason, decisions)
+            summary = got.model_dump() if got else None
+            self.store.append_event(ctx.case_id, ctx.next_step("summarize"), "summary",
+                                    {"summary": summary, "failed": got is None}, now)
+        ctx.summary = summary
         self.store.update_case(ctx.case_id, now, status="closed" if closed else "open",
                                stage="closed" if closed else "awaiting_human", disposition=out.disposition,
                                mode=out.mode, queue=out.queue, priority=int(out.priority),
                                sla_due=d.sla_due.isoformat() if d.sla_due else None, language=u.language,
-                               intents=list(u.intents), flags=list(out.flags))
+                               intents=list(u.intents), flags=list(out.flags),
+                               **({"summary": summary} if summary else {}))
         ctx.stage = out.disposition
         return ctx
 
