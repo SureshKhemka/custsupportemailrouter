@@ -1,0 +1,284 @@
+# Non-English emails. Only English is supported (D-001), so every case here goes to a human
+# (FR-5). Intents and decisions are still labelled for classification and language evals.
+- id: D151
+  tags: [unsupported_language]
+  email:
+    from: {email: rohan.mehta@example.com, name: रोहन मेहता}
+    subject: मेरा ऑर्डर कब आएगा?
+    received_at: "@now-0.1d"
+    body: |
+      नमस्ते, मैंने ORD-100001 में स्मार्टफोन ऑर्डर किया था। यह कब तक भेजा जाएगा? कृपया बताइए।
+      धन्यवाद, रोहन
+  label:
+    language: hi
+    order: ORD-100001
+    intents:
+      - {intent: order_status, order_id: ORD-100001, mode: AUTO, decision: {delivery_state: not_shipped}, entities: {order_ids: [ORD-100001], items: [smartphone]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D152
+  tags: [unsupported_language, return_window_inside]
+  email:
+    from: {email: harsh.vardhan@example.com, name: हर्ष वर्धन}
+    subject: जींस वापस करनी है
+    received_at: "@now-0.2d"
+    body: |
+      मुझे ORD-100015 की जींस वापस करनी है, साइज़ सही नहीं है। कृपया रिटर्न शुरू करें।
+  label:
+    language: hi
+    order: ORD-100015
+    intents:
+      - {intent: return_request, order_id: ORD-100015, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100015], items: [jeans]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    proposed_actions:
+      - {type: create_return, order_id: ORD-100015, lines: [{line_id: ORD-100015-L1, qty: 1}]}
+    forbidden_actions: [create_return]
+
+- id: D153
+  tags: [unsupported_language]
+  email:
+    from: {email: rajesh.pandey@example.com, name: राजेश पांडे}
+    subject: चादर फटी हुई आई
+    received_at: "@now-0.1d"
+    body: |
+      ORD-100023 में जो बेडशीट सेट आया है वह बीच से फटा हुआ है। कृपया नया भेजें।
+  label:
+    language: hi
+    order: ORD-100023
+    intents:
+      - {intent: damaged_item, order_id: ORD-100023, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100023], items: [bedsheet set], remedy: replacement}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D154
+  tags: [unsupported_language, secondary_email, vip, high_value]
+  email:
+    from: {email: sofia.g@example.org, name: Sofia García}
+    subject: ¿Cuándo se entregó mi portátil?
+    received_at: "@now-0.1d"
+    body: |
+      Hola, ¿podrían confirmarme la fecha de entrega del pedido ORD-100031? Necesito la factura para mi empresa.
+      Gracias, Sofía
+  label:
+    language: es
+    order: ORD-100031
+    intents:
+      - {intent: order_status, order_id: ORD-100031, mode: AUTO, decision: {delivery_state: delivered}, entities: {order_ids: [ORD-100031]}}
+    escalation: [vip, high_value]
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D155
+  tags: [unsupported_language, partially_returned]
+  email:
+    from: {email: maria.lopez@example.com, name: María López}
+    subject: Devolución de zapatillas
+    received_at: "@now-0.2d"
+    body: |
+      Hola, quiero devolver las zapatillas de correr del pedido ORD-100035. Me quedan pequeñas.
+  label:
+    language: es
+    order: ORD-100035
+    intents:
+      - intent: return_request
+        order_id: ORD-100035
+        mode: AUTO
+        decision: {eligible: true, reason: eligible, lines: [{line_id: ORD-100035-L1, qty: 1}]}
+        entities: {order_ids: [ORD-100035], items: [running shoes]}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    proposed_actions:
+      - {type: create_return, order_id: ORD-100035, lines: [{line_id: ORD-100035-L1, qty: 1}]}
+    forbidden_actions: [create_return]
+
+- id: D156
+  tags: [unsupported_language]
+  email:
+    from: {email: carlos.ruiz@example.com, name: Carlos Ruiz}
+    subject: Problema con el pago
+    received_at: "@now-0.1d"
+    body: |
+      Buenas, intenté pagar el pedido ORD-100118 con mi tarjeta pero no sé si se cobró. ¿Pueden revisarlo?
+  label:
+    language: es
+    order: ORD-100118
+    intents:
+      - {intent: payment_issue, order_id: ORD-100118, mode: ROUTE, decision: {failed_payment: false}, entities: {order_ids: [ORD-100118]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: D157
+  tags: [unsupported_language, vip, high_value]
+  email:
+    from: {email: lukas.schneider@example.com, name: Lukas Schneider}
+    subject: Lieferung Fernseher ORD-100032
+    received_at: "@now-0.1d"
+    body: |
+      Guten Tag, wann wird der Fernseher aus Bestellung ORD-100032 geliefert? Ich muss zu Hause sein.
+      Mit freundlichen Grüßen, Lukas Schneider
+  label:
+    language: de
+    order: ORD-100032
+    intents:
+      - {intent: order_status, order_id: ORD-100032, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100032]}}
+    escalation: [vip, high_value]
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D158
+  tags: [unsupported_language, legal_explicit, multi_intent]
+  email:
+    from: {email: hannah.weber@example.com, name: Hannah Weber}
+    subject: Bestellung ORD-100038 - rechtliche Schritte
+    received_at: "@now-0.1d"
+    body: |
+      Meine Smartwatch (ORD-100038) ist immer noch nicht angekommen. Ich werde meinen Anwalt einschalten, wenn ich bis morgen keine
+      Antwort bekomme.
+  label:
+    language: de
+    order: ORD-100038
+    intents:
+      - {intent: order_status, order_id: ORD-100038, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100038]}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply]
+
+- id: D159
+  tags: [unsupported_language, return_window_inside]
+  email:
+    from: {email: tom.becker@example.com, name: Tom Becker}
+    subject: Rücksendung Schreibtischlampe
+    received_at: "@now-0.2d"
+    body: |
+      Hallo, ich möchte die LED-Schreibtischlampe aus Bestellung ORD-100036 zurücksenden. Sie ist zu hell.
+  label:
+    language: de
+    order: ORD-100036
+    intents:
+      - {intent: return_request, order_id: ORD-100036, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100036], items: [LED desk lamp]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    proposed_actions:
+      - {type: create_return, order_id: ORD-100036, lines: [{line_id: ORD-100036-L1, qty: 1}]}
+    forbidden_actions: [create_return]
+
+- id: D160
+  tags: [code_mixed]
+  email:
+    from: {email: rahul.gupta@example.com, name: Rahul Gupta}
+    subject: order kab aayega
+    received_at: "@now-0.1d"
+    body: |
+      bhai mera order ORD-100044 kab tak aayega? 2 din ho gaye, tracking bhi update nahi ho rahi properly. jaldi batao please
+  label:
+    language: hi
+    code_mixed: true
+    order: ORD-100044
+    intents:
+      - {intent: order_status, order_id: ORD-100044, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100044]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    notes: Hinglish is treated as Hindi (unsupported for now, D-001).
+
+- id: D161
+  tags: [code_mixed]
+  email:
+    from: {email: ananya.iyer@example.com, name: Ananya Iyer}
+    subject: cancel karna hai
+    received_at: "@now-0.2d"
+    body: |
+      Hi, mujhe mera phone wala order cancel karna hai, abhi ship nahi hua hai na? please jaldi cancel kar do.
+  label:
+    language: hi
+    code_mixed: true
+    order: ORD-100002
+    intents:
+      - {intent: cancel_order, order_id: ORD-100002, mode: AUTO, decision: {cancellable: true}, entities: {items: [phone]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    proposed_actions:
+      - {type: cancel_order, order_id: ORD-100002}
+    forbidden_actions: [cancel_order]
+
+- id: D162
+  tags: [unsupported_language]
+  email:
+    from: {email: aditya.rao@example.com, name: Aditya Rao}
+    subject: Où est ma commande ?
+    received_at: "@now-0.1d"
+    body: |
+      Bonjour, pouvez-vous me confirmer la date de livraison de la commande ORD-100006 ? Merci.
+  label:
+    language: fr
+    order: ORD-100006
+    intents:
+      - {intent: order_status, order_id: ORD-100006, mode: AUTO, decision: {delivery_state: delivered}, entities: {order_ids: [ORD-100006]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D163
+  tags: [unsupported_language]
+  email:
+    from: {email: chen.wei@example.com, name: 陈伟}
+    subject: 订单 ORD-100033 送达了吗？
+    received_at: "@now-0.1d"
+    body: |
+      您好，请问我的订单 ORD-100033（两部手机）什么时候送达的？谢谢。
+  label:
+    language: zh
+    order: ORD-100033
+    intents:
+      - {intent: order_status, order_id: ORD-100033, mode: AUTO, decision: {delivery_state: delivered}, entities: {order_ids: [ORD-100033]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D164
+  tags: [spam, unsupported_language]
+  email:
+    from: {email: promo@ofertas-incriveis.example.biz, name: Ofertas}
+    subject: Ganhe dinheiro rápido trabalhando de casa!
+    received_at: "@now-0.3d"
+    body: |
+      Descubra o segredo para ganhar R$ 5.000 por semana trabalhando apenas 2 horas por dia. Clique agora!
+  label:
+    language: pt
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: D165
+  tags: [unsupported_language]
+  email:
+    from: {email: maria.lopez@example.com, name: María López}
+    subject: Queja sobre el embalaje
+    received_at: "@now-0.1d"
+    body: |
+      El paquete llegó con la caja completamente aplastada. Por suerte no se rompió nada, pero deberían mejorar el embalaje.
+  label:
+    language: es
+    order: not_needed
+    intents:
+      - {intent: complaint, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D166
+  tags: [unsupported_language, no_order_id_single_match]
+  email:
+    from: {email: gurpreet.kaur@example.com, name: गुरप्रीत कौर}
+    subject: पावर बैंक
+    received_at: "@now-0.05d"
+    body: |
+      नमस्ते, आज सुबह मैंने पावर बैंक ऑर्डर किया। क्या वह भेज दिया गया है?
+  label:
+    language: hi
+    order: ORD-100150
+    intents:
+      - {intent: order_status, order_id: ORD-100150, mode: AUTO, decision: {delivery_state: not_shipped}, entities: {items: [power bank]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D167
+  tags: [unsupported_language]
+  email:
+    from: {email: daniel.fischer@example.com, name: Daniel Fischer}
+    subject: Frage zur Heißluftfritteuse
+    received_at: "@now-0.2d"
+    body: |
+      Ist der Korb der Heißluftfritteuse 4L spülmaschinenfest?
+  label:
+    language: de
+    order: not_needed
+    intents:
+      - {intent: product_question, mode: ROUTE, entities: {items: [Air Fryer 4L]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}

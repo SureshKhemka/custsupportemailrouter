@@ -67,6 +67,25 @@ without reseeding), `GET /_admin/calls?since=N`, `GET|PUT /_admin/faults`.
 - **State** persists in `var/mocks/` across restarts; the outbox also writes each message to
   `var/outbox/`.
 
+## Labelled dataset
+
+`dataset/` holds 289 labelled emails: `dev/` (188) for building and `test/` (101), which is
+**held out**, never used for prompt examples or tuning. Records are YAML: an email plus its
+label (intents, modes, decisions, ownership, escalation signals, case disposition and queue,
+expected and forbidden actions, reply facts). See `src/router/dataset/schema.py`.
+
+```bash
+uv run router dataset check                 # DS-5: labels vs seed data, policy and config
+uv run router dataset inbox --split dev     # write the emails as inbox JSON files (docs/email-format.md)
+```
+
+- `dataset/bad_replies/`: replies the outbound gate must block, plus controls it must pass (DS-6).
+- `dataset/human_ratings/`: replies with 1-5 ratings for judge agreement (DS-7). They are
+  **drafts proposed by Claude** until a human reviews them and changes `rated_by`.
+- Behaviour choices (escalation, multi-intent actions, injection, identity, ambiguity) live in
+  `config/handling.yaml`. The checker derives expectations from the active config, so it shows
+  which labels a tuning change would affect.
+
 ## Tests
 
 ```bash

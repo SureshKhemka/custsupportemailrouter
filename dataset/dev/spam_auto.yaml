@@ -1,0 +1,130 @@
+# Spam and automated mail (FR-6): closed without a reply, volume reported.
+- id: D123
+  tags: [out_of_office, simple]
+  email:
+    from: {email: neha.kulkarni@example.com, name: Neha Kulkarni}
+    subject: "Automatic reply: Your refund update"
+    received_at: "@now-0.1d"
+    headers: {Auto-Submitted: auto-replied, X-Autoreply: "yes"}
+    body: |
+      I am out of office until Monday with limited access to email. For urgent matters please contact my colleague.
+  label:
+    order: not_needed
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+    forbidden_actions: [send_reply]
+
+- id: D124
+  tags: [bounce]
+  email:
+    from: {email: mailer-daemon@mx.example.net, name: Mail Delivery Subsystem}
+    subject: "Delivery Status Notification (Failure)"
+    received_at: "@now-0.2d"
+    headers: {Auto-Submitted: auto-generated, Content-Type: multipart/report}
+    body: |
+      Delivery to the following recipient failed permanently:
+          old.address@example.org
+      Technical details of permanent failure: 550 5.1.1 The email account that you tried to reach does not exist.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+    forbidden_actions: [send_reply]
+
+- id: D125
+  tags: [spam]
+  email:
+    from: {email: growth@seo-rockets.example.biz, name: SEO Rockets}
+    subject: Get your website to #1 on Google in 7 days!!!
+    received_at: "@now-0.3d"
+    body: |
+      Dear Business Owner, we guarantee first page ranking for your online store. Reply YES for a free audit worth $499!
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: D126
+  tags: [spam, newsletter]
+  email:
+    from: {email: news@packaging-weekly.example.com, name: Packaging Weekly}
+    subject: "This week: 10 trends in sustainable packaging"
+    received_at: "@now-0.25d"
+    headers: {List-Unsubscribe: "<mailto:unsubscribe@packaging-weekly.example.com>", Precedence: bulk}
+    body: |
+      Welcome to this week's edition! Read about compostable mailers, recycled cardboard and more. Unsubscribe any time.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: D127
+  tags: [spam]
+  email:
+    from: {email: winner@crypto-bonanza.example.biz, name: Crypto Bonanza}
+    subject: You have won 2.5 BTC
+    received_at: "@now-0.1d"
+    body: |
+      Congratulations! Claim your 2.5 BTC prize by sending a small verification fee to the wallet below.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: D128
+  tags: [out_of_office]
+  email:
+    from: {email: lukas.schneider@example.com, name: Lukas Schneider}
+    subject: "Abwesenheitsnotiz: Ihre Bestellung"
+    received_at: "@now-0.2d"
+    headers: {Auto-Submitted: auto-replied}
+    body: |
+      Vielen Dank für Ihre Nachricht. Ich bin bis zum 5. Oktober nicht im Büro und habe nur eingeschränkten Zugriff auf meine E-Mails.
+  label:
+    language: de
+    order: not_needed
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    escalation: [vip]
+    case: {mode: CLOSE, disposition: closed_spam}
+    notes: Automated reply from a VIP customer; still closed without reply.
+
+- id: D129
+  tags: [spam, phishing]
+  email:
+    from: {email: security-alert@shop-example-verify.example.biz, name: Shop Security}
+    subject: Urgent - verify your merchant account
+    received_at: "@now-0.1d"
+    body: |
+      Your merchant account will be suspended in 24 hours. Click here and enter your password to verify.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: D130
+  tags: [automated_notification]
+  email:
+    from: {email: noreply@courier-updates.example.com, name: Courier Updates}
+    subject: Shipment DT7700757076IN delivered
+    received_at: "@now-0.1d"
+    headers: {Auto-Submitted: auto-generated}
+    body: |
+      This is an automated message. Shipment DT7700757076IN has been delivered. Do not reply to this email.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}

@@ -293,3 +293,16 @@ def test_persisted_state_discarded_when_pinned_now_changes(cfg, tmp_path: Path) 
     fresh = TestClient(create_app(type(svc)(spec=svc.spec, seed_dir=svc.seed_dir, clock=svc.clock,
                                             faults=svc.faults, state_dir=svc.state_dir)))
     assert fresh.get("/returns", params={"order_id": oid}).json() == []
+
+
+def test_cancel_order_is_idempotent_and_refuses_shipped_orders(cfg) -> None:
+    c = client(cfg, "order")
+    oid = SCEN["cancel_before_ship"]["order_id"]
+    h = {"Idempotency-Key": "case-3:cancel"}
+    first = c.post(f"/orders/{oid}/cancel", json={"reason": "customer_request"}, headers=h)
+    again = c.post(f"/orders/{oid}/cancel", json={"reason": "customer_request"}, headers=h)
+    assert first.status_code == 201 and again.status_code == 200 and first.json() == again.json()
+    assert c.get(f"/orders/{oid}").json()["status"] == "cancelled"
+    shipped = SCEN["cancel_after_ship"]["order_id"]
+    r = c.post(f"/orders/{shipped}/cancel", json={"reason": "x"}, headers={"Idempotency-Key": "k"})
+    assert r.status_code == 409 and r.json()["detail"]["error"] == "not_cancellable"

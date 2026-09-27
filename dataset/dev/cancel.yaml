@@ -1,0 +1,132 @@
+# Cancellation: AUTO before shipping, DRAFT after (FR-18, PO-5).
+- id: D085
+  tags: [simple]
+  email:
+    from: {email: arjun.nair@example.com, name: Arjun Nair}
+    subject: Cancel ORD-100048
+    received_at: "@now-0.1d"
+    body: |
+      Please cancel my air fryer order ORD-100048. I found it cheaper elsewhere.
+  label:
+    order: ORD-100048
+    intents:
+      - {intent: cancel_order, order_id: ORD-100048, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100048]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100048}
+    reply:
+      must_contain: [{order_id: ORD-100048}]
+
+- id: D086
+  tags: [simple]
+  email:
+    from: {email: divya.pillai@example.com, name: Divya Pillai}
+    subject: Please cancel
+    received_at: "@now-0.2d"
+    body: |
+      Hi, I'd like to cancel the jeans I ordered yesterday. Thanks.
+  label:
+    order: ORD-100049
+    intents:
+      - {intent: cancel_order, order_id: ORD-100049, mode: AUTO, decision: {cancellable: true}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100049}
+
+- id: D087
+  tags: [simple]
+  email:
+    from: {email: suresh.krishnan@example.com, name: Suresh Krishnan}
+    subject: Cancel charger order
+    received_at: "@now-0.1d"
+    body: |
+      Please cancel ORD-100050, I ordered the wrong charger.
+  label:
+    order: ORD-100050
+    intents:
+      - {intent: cancel_order, order_id: ORD-100050, mode: DRAFT, decision: {cancellable: false}, entities: {order_ids: [ORD-100050]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [cancel_order]
+    notes: Already shipped; a human offers a return after delivery.
+
+- id: D088
+  tags: [secondary_email]
+  email:
+    from: {email: suresh.k.home@example.in, name: Suresh}
+    subject: cancel order
+    received_at: "@now-0.1d"
+    body: |
+      Hi, writing from home email. Please cancel order ORD-100050 immediately.
+  label:
+    order: ORD-100050
+    intents:
+      - {intent: cancel_order, order_id: ORD-100050, mode: DRAFT, decision: {cancellable: false}, entities: {order_ids: [ORD-100050]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [cancel_order]
+
+- id: D089
+  tags: [simple]
+  email:
+    from: {email: gaurav.bhatia@example.com, name: Gaurav Bhatia}
+    subject: Cancel bedsheet order ORD-100117
+    received_at: "@now-0.1d"
+    body: |
+      Cancel ORD-100117 please, ordered by mistake.
+  label:
+    order: ORD-100117
+    intents:
+      - {intent: cancel_order, order_id: ORD-100117, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100117]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100117}
+
+- id: D090
+  tags: [simple]
+  email:
+    from: {email: jyoti.rawat@example.com, name: Jyoti Rawat}
+    subject: Cancel shoes
+    received_at: "@now-0.2d"
+    body: |
+      Please cancel the running shoes order ORD-100111. My son got the same pair as a gift.
+  label:
+    order: ORD-100111
+    intents:
+      - {intent: cancel_order, order_id: ORD-100111, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100111]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100111}
+
+- id: D091
+  tags: [vip]
+  email:
+    from: {email: emily.carter@example.com, name: Emily Carter}
+    subject: Cancel the mixer grinder
+    received_at: "@now-0.1d"
+    body: |
+      Please cancel ORD-100103, I'd rather buy it in store.
+  label:
+    order: ORD-100103
+    intents:
+      - {intent: cancel_order, order_id: ORD-100103, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100103]}}
+    escalation: [vip]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: cancel_order, order_id: ORD-100103}
+    forbidden_actions: [cancel_order]
+    notes: VIP escalation -> a human approves; the cancellation is held until then.
+
+- id: D092
+  tags: [simple]
+  email:
+    from: {email: sameer.kohli@example.com, name: Sameer Kohli}
+    subject: Cancel order ORD-100124
+    received_at: "@now-0.1d"
+    body: |
+      Hi, kindly cancel order ORD-100124 (dinner set, lamp and smartwatches). Plans changed.
+  label:
+    order: ORD-100124
+    intents:
+      - {intent: cancel_order, order_id: ORD-100124, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100124]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100124}

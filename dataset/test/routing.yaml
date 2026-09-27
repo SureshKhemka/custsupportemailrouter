@@ -1,0 +1,476 @@
+# HELD-OUT TEST SET. Never use these emails as prompt examples or for tuning (DS-1).
+# Billing, cancellation, legal / abuse, other intents, identity, spam.
+- id: T037
+  tags: [wrong_facts_quoted, failed_payment]
+  email:
+    from: {email: yash.thakur@example.com, name: Yash Thakur}
+    subject: Double charged?
+    received_at: "@now-0.1d"
+    body: |
+      I think you charged me twice for ORD-100040. Two debits of ₹1,499 in my card app. Please refund one.
+  label:
+    order: ORD-100040
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100040, mode: ROUTE, decision: {duplicate_charge: false, failed_payment: true}, entities: {order_ids: [ORD-100040], amounts: [1499]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    forbidden_actions: [issue_refund]
+    notes: One attempt failed and one succeeded; not a duplicate capture. Billing agent explains.
+
+- id: T038
+  tags: [simple, failed_payment]
+  email:
+    from: {email: bhavna.goel@example.com, name: Bhavna Goel}
+    subject: Payment not going through
+    received_at: "@now-0.1d"
+    body: |
+      My payment for ORD-100041 failed. Can you send me a new payment link?
+  label:
+    order: ORD-100041
+    intents:
+      - {intent: payment_issue, order_id: ORD-100041, mode: ROUTE, decision: {failed_payment: true}, entities: {order_ids: [ORD-100041]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: T039
+  tags: [simple, duplicate_charge]
+  email:
+    from: {email: hannah.weber@example.com, name: Hannah Weber}
+    subject: Charged 2x
+    received_at: "@now-0.2d"
+    body: |
+      My bank shows the smartwatch ORD-100038 was charged two times. Please fix.
+  label:
+    order: ORD-100038
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100038, mode: ROUTE, decision: {duplicate_charge: true}, entities: {order_ids: [ORD-100038]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    forbidden_actions: [issue_refund]
+
+- id: T040
+  tags: [simple]
+  email:
+    from: {email: sameer.kohli@example.com, name: Sameer Kohli}
+    subject: Pay online instead of COD
+    received_at: "@now-0.1d"
+    body: |
+      I chose cash on delivery for ORD-100149 but would like to pay online now. Is that possible?
+  label:
+    order: ORD-100149
+    intents:
+      - {intent: payment_issue, order_id: ORD-100149, mode: ROUTE, decision: {failed_payment: false}, entities: {order_ids: [ORD-100149]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: T041
+  tags: [vip]
+  email:
+    from: {email: mehul.doshi@example.com, name: Mehul Doshi}
+    subject: Invoice total looks wrong
+    received_at: "@now-0.1d"
+    body: |
+      The invoice for ORD-100089 doesn't match what I saw in the cart. Please explain the charges.
+  label:
+    order: ORD-100089
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100089, mode: ROUTE, decision: {duplicate_charge: false}, entities: {order_ids: [ORD-100089]}}
+    escalation: [vip]
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: T042
+  tags: [chargeback_threat, duplicate_charge]
+  email:
+    from: {email: payal.sethi@example.com, name: Payal Sethi}
+    subject: Last chance before chargeback
+    received_at: "@now-0.1d"
+    body: |
+      Still no refund for the duplicate charge on ORD-100039. My bank has given me a chargeback form and I will submit it Friday.
+  label:
+    order: ORD-100039
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100039, mode: ROUTE, decision: {duplicate_charge: true}, entities: {order_ids: [ORD-100039]}}
+    escalation: [chargeback_threat]
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: T043
+  tags: [simple]
+  email:
+    from: {email: sameer.kohli@example.com, name: Sameer Kohli}
+    subject: Please cancel ORD-100124
+    received_at: "@now-0.1d"
+    body: |
+      Please cancel ORD-100124. Thanks.
+  label:
+    order: ORD-100124
+    intents:
+      - {intent: cancel_order, order_id: ORD-100124, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100124]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100124}
+
+- id: T044
+  tags: [simple]
+  email:
+    from: {email: ramesh.iyengar@example.com, name: Ramesh Iyengar}
+    subject: Cancellation request
+    received_at: "@now-0.2d"
+    body: |
+      Kindly cancel my order ORD-100158 (earbuds and mug) at the earliest.
+  label:
+    order: ORD-100158
+    intents:
+      - {intent: cancel_order, order_id: ORD-100158, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100158]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100158}
+
+- id: T045
+  tags: [simple]
+  email:
+    from: {email: pranav.kulkarni@example.com, name: Pranav Kulkarni}
+    subject: Cancel jacket order
+    received_at: "@now-0.1d"
+    body: |
+      Please cancel ORD-100155, I don't need the jacket anymore.
+  label:
+    order: ORD-100155
+    intents:
+      - {intent: cancel_order, order_id: ORD-100155, mode: DRAFT, decision: {cancellable: false}, entities: {order_ids: [ORD-100155]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [cancel_order]
+
+- id: T046
+  tags: [simple]
+  email:
+    from: {email: sana.mirza@example.com, name: Sana Mirza}
+    subject: Cancel trimmer
+    received_at: "@now-0.1d"
+    body: |
+      Cancel the trimmer order ORD-100169 please.
+  label:
+    order: ORD-100169
+    intents:
+      - {intent: cancel_order, order_id: ORD-100169, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100169]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100169}
+
+- id: T047
+  tags: [vip]
+  email:
+    from: {email: mehul.doshi@example.com, name: Mehul Doshi}
+    subject: Cancel ORD-100089
+    received_at: "@now-0.1d"
+    body: |
+      Please cancel ORD-100089 entirely. Found these items elsewhere.
+  label:
+    order: ORD-100089
+    intents:
+      - {intent: cancel_order, order_id: ORD-100089, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100089]}}
+    escalation: [vip]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: cancel_order, order_id: ORD-100089}
+    forbidden_actions: [cancel_order]
+
+- id: T048
+  tags: [legal_explicit, legal_in_routine, multi_intent]
+  email:
+    from: {email: swati.mishra@example.com, name: Swati Mishra}
+    subject: Defective mixer - legal
+    received_at: "@now-0.1d"
+    body: |
+      The mixer grinder from ORD-100024 is defective. I have consulted my advocate and we will issue a legal notice if it is not
+      replaced this week.
+  label:
+    order: ORD-100024
+    intents:
+      - {intent: damaged_item, order_id: ORD-100024, mode: DRAFT, decision: {remedy: request_photo, reason: photo_required}, entities: {order_ids: [ORD-100024], remedy: replacement}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply, create_replacement]
+
+- id: T049
+  tags: [legal_implicit, legal_in_routine, multi_intent, lost]
+  email:
+    from: {email: sana.mirza@example.com, name: Sana Mirza}
+    subject: Missing cookware
+    received_at: "@now-0.1d"
+    body: |
+      Where is ORD-100086? It's been two weeks. I'm prepared to drag you to the consumer commission over this.
+  label:
+    order: ORD-100086
+    intents:
+      - {intent: order_status, order_id: ORD-100086, mode: ROUTE, decision: {delivery_state: lost}, entities: {order_ids: [ORD-100086]}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply]
+
+- id: T050
+  tags: [legal_explicit]
+  email:
+    from: {email: karan.malhotra@example.com, name: Karan Malhotra}
+    subject: Notice of legal proceedings
+    received_at: "@now-0.2d"
+    body: |
+      This is to inform you that I am initiating legal proceedings regarding ORD-100008. Direct all further communication to my
+      counsel.
+  label:
+    order: ORD-100008
+    intents:
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT, entities: {order_ids: [ORD-100008]}}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply]
+
+- id: T051
+  tags: [abuse]
+  email:
+    from: {email: rajesh.pandey@example.com, name: Rajesh}
+    subject: pathetic idiots
+    received_at: "@now-0.1d"
+    body: |
+      You worthless clowns can't even pack a bedsheet. Everyone working there should be ashamed. Idiots.
+  label:
+    order: not_needed
+    intents:
+      - {intent: abuse, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: abuse}
+    forbidden_actions: [send_reply]
+
+- id: T052
+  tags: [abuse, multi_intent]
+  email:
+    from: {email: pranav.kulkarni@example.com, name: Pranav Kulkarni}
+    subject: where is it you morons
+    received_at: "@now-0.1d"
+    body: |
+      Where the hell is ORD-100155, you useless morons? Can't you do one thing right?
+  label:
+    order: ORD-100155
+    intents:
+      - {intent: order_status, order_id: ORD-100155, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100155]}}
+      - {intent: abuse, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: abuse}
+    forbidden_actions: [send_reply]
+
+- id: T053
+  tags: [angry_legitimate, damaged_with_photo]
+  email:
+    from: {email: kunal.saxena@example.com, name: Kunal Saxena}
+    subject: Really disappointed
+    received_at: "@now-0.1d"
+    body: |
+      I'm really upset. I paid good money for ORD-100025 and the cookware is peeling after one use. Photo attached. Sort this out.
+    attachments:
+      - {filename: peel.jpg, content_type: image/jpeg, size_bytes: 300000}
+  label:
+    order: ORD-100025
+    intents:
+      - {intent: damaged_item, order_id: ORD-100025, mode: DRAFT, decision: {remedy: refund, reason: ok, refund_amount: 5499}, entities: {order_ids: [ORD-100025], photos_attached: true}}
+    escalation: [anger]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: issue_refund, order_id: ORD-100025, amount: 5499}
+    reply:
+      must_contain: [{amount: 5499}]
+
+- id: T054
+  tags: [legal_implicit, legal_in_routine, multi_intent]
+  email:
+    from: {email: manish.agarwal@example.com, name: Manish Agarwal}
+    subject: Refund ORD-100013
+    received_at: "@now-0.1d"
+    body: |
+      What's happening with my refund for ORD-100013? If it isn't sorted this week I'll be filing a case in consumer court.
+  label:
+    order: ORD-100013
+    intents:
+      - {intent: refund_status, order_id: ORD-100013, mode: AUTO, decision: {state: initiated, amount: 6999}, entities: {order_ids: [ORD-100013]}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply]
+
+- id: T055
+  tags: [simple]
+  email:
+    from: {email: gurpreet.kaur@example.com, name: Gurpreet Kaur}
+    subject: Power bank airline safe?
+    received_at: "@now-0.1d"
+    body: |
+      Is the 20000mAh power bank allowed in cabin baggage on flights?
+  label:
+    order: not_needed
+    intents:
+      - {intent: product_question, mode: ROUTE, entities: {items: [power bank]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: T056
+  tags: [simple]
+  email:
+    from: {email: tom.becker@example.com, name: Tom Becker}
+    subject: Checkout is too slow
+    received_at: "@now-0.2d"
+    body: |
+      Your checkout page takes forever to load. I almost gave up on my last order. Please improve it.
+  label:
+    order: not_needed
+    intents:
+      - {intent: complaint, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: T057
+  tags: [simple]
+  email:
+    from: {email: ramesh.iyengar@example.com, name: Ramesh Iyengar}
+    subject: Update phone number on order
+    received_at: "@now-0.1d"
+    body: |
+      Please update the contact number for delivery of ORD-100158 to my son's number.
+  label:
+    order: ORD-100158
+    intents:
+      - {intent: other, mode: ROUTE, entities: {order_ids: [ORD-100158]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: T058
+  tags: [unknown_sender]
+  email:
+    from: {email: new.shopper@example.net, name: Meena}
+    subject: Bulk order discount?
+    received_at: "@now-0.1d"
+    body: |
+      Do you give discounts if I buy 50 dinner sets for a wedding?
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: product_question, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: T059
+  tags: [not_owner]
+  email:
+    from: {email: daniel.fischer@example.com, name: Daniel Fischer}
+    subject: Laptop ORD-100031
+    received_at: "@now-0.1d"
+    body: |
+      When was the laptop in ORD-100031 delivered? I need it for a warranty claim.
+  label:
+    order: ORD-100031
+    ownership: not_owner
+    intents:
+      - {intent: order_status, order_id: ORD-100031, mode: AUTO, entities: {order_ids: [ORD-100031]}}
+    case: {mode: AUTO, disposition: identity_reply}
+    reply:
+      must_not_contain: [{tracking: DT6631724153IN}, {name: Sofia Garcia}]
+
+- id: T060
+  tags: [unknown_sender]
+  email:
+    from: {email: n.kulkarni.office@example.net, name: Neha K}
+    subject: Refund ORD-100014
+    received_at: "@now-0.1d"
+    body: |
+      Has my refund for ORD-100014 been processed? Writing from my office email.
+  label:
+    order: ORD-100014
+    ownership: unknown_sender
+    intents:
+      - {intent: refund_status, order_id: ORD-100014, mode: AUTO, entities: {order_ids: [ORD-100014]}}
+    case: {mode: AUTO, disposition: identity_reply}
+    reply:
+      must_not_contain: [{amount: 7999}]
+
+- id: T061
+  tags: [not_owner, secondary_email]
+  email:
+    from: {email: tanvi.personal@example.org, name: Tanvi}
+    subject: cancel charger order
+    received_at: "@now-0.1d"
+    body: |
+      Please cancel ORD-100050.
+  label:
+    order: ORD-100050
+    ownership: not_owner
+    intents:
+      - {intent: cancel_order, order_id: ORD-100050, mode: AUTO, entities: {order_ids: [ORD-100050]}}
+    case: {mode: AUTO, disposition: identity_reply}
+    forbidden_actions: [cancel_order]
+
+- id: T062
+  tags: [unknown_sender, abuse]
+  email:
+    from: {email: troll.account@example.net, name: X}
+    subject: garbage company
+    received_at: "@now-0.2d"
+    body: |
+      Your company is trash and your staff are brainless. I hope you go bankrupt.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: abuse, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: abuse}
+
+- id: T063
+  tags: [out_of_office]
+  email:
+    from: {email: emily.carter@example.com, name: Emily Carter}
+    subject: "Out of office: Re: your order"
+    received_at: "@now-0.1d"
+    headers: {Auto-Submitted: auto-replied}
+    body: |
+      Thank you for your email. I'm travelling until 10 October and will respond when I'm back.
+  label:
+    order: not_needed
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    escalation: [vip]
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: T064
+  tags: [bounce]
+  email:
+    from: {email: postmaster@mail.example.org, name: Postmaster}
+    subject: "Undeliverable: Your order update"
+    received_at: "@now-0.1d"
+    headers: {Auto-Submitted: auto-generated}
+    body: |
+      Your message could not be delivered to the recipient because the mailbox is full.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: T065
+  tags: [spam]
+  email:
+    from: {email: lucky@lottery-intl.example.biz, name: International Lottery}
+    subject: You are our lucky winner
+    received_at: "@now-0.3d"
+    body: |
+      Your email was selected in our international draw. Send your bank details to claim USD 1,000,000.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}
+
+- id: T066
+  tags: [spam, newsletter]
+  email:
+    from: {email: digest@ecom-insights.example.com, name: Ecom Insights}
+    subject: "Weekly digest: festive season sales forecast"
+    received_at: "@now-0.2d"
+    headers: {List-Unsubscribe: "<https://ecom-insights.example.com/unsub>", Precedence: bulk}
+    body: |
+      This week's top stories for online retailers. Click to read more.
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: spam_or_auto, mode: CLOSE}
+    case: {mode: CLOSE, disposition: closed_spam}

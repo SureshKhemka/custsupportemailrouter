@@ -1,0 +1,526 @@
+# Order status ("where is my order?"), the largest category (~45% of real traffic).
+- id: D001
+  tags: [simple]
+  email:
+    from: {email: kavya.menon@example.com, name: Kavya Menon}
+    subject: Where is my order ORD-100004?
+    received_at: "@now-0.1d"
+    body: |
+      Hi,
+      I ordered an air fryer two days ago, order ORD-100004. Could you tell me where it is right now?
+      Thanks,
+      Kavya
+  label:
+    order: ORD-100004
+    intents:
+      - {intent: order_status, order_id: ORD-100004, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100004], items: [air fryer]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    forbidden_actions: [create_return, issue_refund, cancel_order]
+    reply:
+      must_contain: [{order_id: ORD-100004}, {tracking: EK8667526689IN}]
+
+- id: D002
+  tags: [simple, no_order_id_single_match]
+  email:
+    from: {email: isha.kapoor@example.com, name: Isha Kapoor}
+    subject: air fryer delivery
+    received_at: "@now-0.15d"
+    body: |
+      Hello, my air fryer was supposed to come today. Is it still coming today? I need to be home to receive it.
+      Isha
+  label:
+    order: ORD-100005
+    intents:
+      - {intent: order_status, order_id: ORD-100005, mode: AUTO, decision: {delivery_state: out_for_delivery}, entities: {items: [air fryer]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100005}, {tracking: BD4144181540IN}]
+
+- id: D003
+  tags: [simple, delayed]
+  email:
+    from: {email: meera.joshi@example.com, name: Meera Joshi}
+    subject: Late delivery - ORD-100007
+    received_at: "@now-0.2d"
+    body: |
+      Hi team,
+      My running shoes (ORD-100007) were promised two days ago and they still haven't arrived. What's going on?
+      Regards, Meera
+  label:
+    order: ORD-100007
+    intents:
+      - {intent: order_status, order_id: ORD-100007, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100007], items: [running shoes]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100007}, {tracking: EK2510007635IN}]
+
+- id: D004
+  tags: [simple, lost]
+  email:
+    from: {email: karan.malhotra@example.com, name: Karan Malhotra}
+    subject: No update on my mixer grinder for over a week
+    received_at: "@now-0.1d"
+    body: |
+      Hello,
+      Order ORD-100008. The tracking has not moved in more than a week and the delivery date passed long ago.
+      Is my parcel lost? Please check.
+      Karan
+  label:
+    order: ORD-100008
+    intents:
+      - {intent: order_status, order_id: ORD-100008, mode: ROUTE, decision: {delivery_state: lost}, entities: {order_ids: [ORD-100008], items: [mixer grinder]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    forbidden_actions: [issue_refund, create_replacement]
+    notes: Lost shipments are never answered automatically (FR-18).
+
+- id: D005
+  tags: [lost, lost_boundary]
+  email:
+    from: {email: siddharth.bose@example.com, name: Siddharth Bose}
+    subject: Desk lamp ORD-100009 stuck
+    received_at: "@now"
+    body: |
+      Hi, my LED desk lamp order ORD-100009 has shown the same tracking status for a whole week now. Can you find out what happened?
+      Siddharth
+  label:
+    order: ORD-100009
+    intents:
+      - {intent: order_status, order_id: ORD-100009, mode: ROUTE, decision: {delivery_state: lost}, entities: {order_ids: [ORD-100009]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    notes: Last tracking update exactly 7 days before this email -> lost (boundary counts).
+
+- id: D006
+  tags: [delayed, lost_boundary]
+  email:
+    from: {email: pooja.desai@example.com, name: Pooja Desai}
+    subject: Dinner set order ORD-100010 delayed
+    received_at: "@now-0.05d"
+    body: |
+      Hello,
+      My dinner set should have arrived 3 days ago. Tracking hasn't changed for almost a week. When will I get it?
+      Pooja Desai
+  label:
+    order: ORD-100010
+    intents:
+      - {intent: order_status, order_id: ORD-100010, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100010], items: [dinner set]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100010}, {tracking: EK1994848086IN}]
+    notes: Last update just under 7 days before the email -> delayed, not lost.
+
+- id: D007
+  tags: [very_short, no_order_id_single_match]
+  email:
+    from: {email: rohan.mehta@example.com, name: Rohan}
+    subject: ""
+    received_at: "@now-0.1d"
+    body: "where's my stuff??"
+  label:
+    order: ORD-100001
+    intents:
+      - {intent: order_status, order_id: ORD-100001, mode: AUTO, decision: {delivery_state: not_shipped}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100001}]
+
+- id: D008
+  tags: [simple]
+  email:
+    from: {email: sneha.reddy@example.com, name: Sneha Reddy}
+    subject: Hair dryer shipped?
+    received_at: "@now-0.2d"
+    body: |
+      Hi! I got a message that my order #100003 has shipped. Can you share the tracking details please?
+      Sneha
+  label:
+    order: ORD-100003
+    intents:
+      - {intent: order_status, order_id: ORD-100003, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100003], items: [hair dryer]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100003}, {tracking: EK5369347909IN}]
+
+- id: D009
+  tags: [simple]
+  email:
+    from: {email: aditya.rao@example.com, name: Aditya Rao}
+    subject: Delivery date for my records
+    received_at: "@now-0.3d"
+    body: |
+      Dear Sir/Madam,
+      For my records, could you confirm on which date order ORD-100006 (ceramic dinner set) was delivered?
+      Regards,
+      Aditya Rao
+  label:
+    order: ORD-100006
+    intents:
+      - {intent: order_status, order_id: ORD-100006, mode: AUTO, decision: {delivery_state: delivered}, entities: {order_ids: [ORD-100006], items: [ceramic dinner set]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100006}, {date: "@now-25d"}]
+
+- id: D010
+  tags: [no_order_id_single_match]
+  email:
+    from: {email: irfan.sheikh@example.com, name: Irfan Sheikh}
+    subject: Power bank
+    received_at: "@now-0.25d"
+    body: |
+      Hello, I ordered a power bank a few days back. Any idea when it will reach Kolkata?
+      - Irfan
+  label:
+    order: ORD-100043
+    intents:
+      - {intent: order_status, order_id: ORD-100043, mode: AUTO, decision: {delivery_state: in_transit}, entities: {items: [power bank]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100043}, {tracking: DT7700757076IN}]
+
+- id: D011
+  tags: [no_order_id_multiple_matches]
+  email:
+    from: {email: rahul.gupta@example.com, name: Rahul Gupta}
+    subject: my order
+    received_at: "@now-0.1d"
+    body: |
+      Hi, when will my order arrive? I've been waiting.
+      Rahul
+  label:
+    order: ambiguous
+    intents:
+      - {intent: order_status, mode: AUTO}
+    case: {mode: AUTO, disposition: clarification_requested}
+    forbidden_actions: [create_return, cancel_order]
+    notes: Three recent orders and no hint which one -> ask, do not guess (FR-11).
+
+- id: D012
+  tags: [secondary_email]
+  email:
+    from: {email: rahulg@example.in, name: Rahul G}
+    subject: ORD-100045 tracking
+    received_at: "@now-0.1d"
+    body: |
+      Please send me the tracking link for ORD-100045 (desk lamp). Thanks.
+  label:
+    order: ORD-100045
+    intents:
+      - {intent: order_status, order_id: ORD-100045, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100045], items: [desk lamp]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100045}, {tracking: DT2783540166IN}]
+
+- id: D013
+  tags: [secondary_email]
+  email:
+    from: {email: priya.p.shop@example.in, name: Priya P}
+    subject: Earbuds order status
+    received_at: "@now-0.2d"
+    body: |
+      Hi, writing from my other email. Can you check order ORD-100042 for the wireless earbuds? When should I expect it?
+      Priya Patel
+  label:
+    order: ORD-100042
+    intents:
+      - {intent: order_status, order_id: ORD-100042, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100042], items: [wireless earbuds]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100042}, {tracking: DL2109278389IN}]
+
+- id: D014
+  tags: [vip]
+  email:
+    from: {email: aarav.sharma@example.com, name: Aarav Sharma}
+    subject: Puffer jacket ORD-100047
+    received_at: "@now-0.15d"
+    body: |
+      Hello, can you let me know the status of ORD-100047? I'm travelling next week and need the jacket before then.
+      Aarav
+  label:
+    order: ORD-100047
+    intents:
+      - {intent: order_status, order_id: ORD-100047, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100047], items: [puffer jacket]}}
+    escalation: [vip]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100047}, {tracking: DL9462993640IN}]
+
+- id: D015
+  tags: [vip, high_value]
+  email:
+    from: {email: lukas.schneider@example.com, name: Lukas Schneider}
+    subject: TV delivery ORD-100032
+    received_at: "@now-0.1d"
+    body: |
+      Hi,
+      I ordered the 55 inch TV (ORD-100032). Could you confirm the expected delivery date? Someone needs to be at home to receive it.
+      Best, Lukas
+  label:
+    order: ORD-100032
+    intents:
+      - {intent: order_status, order_id: ORD-100032, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100032], items: [TV]}}
+    escalation: [vip, high_value]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100032}, {tracking: DT9002685141IN}]
+
+- id: D016
+  tags: [simple]
+  email:
+    from: {email: lakshmi.subramanian@example.com, name: Lakshmi Subramanian}
+    subject: Is ORD-100058 coming today?
+    received_at: "@now-0.1d"
+    body: |
+      Good morning, the app says my running shoes (ORD-100058) are arriving today. Can you confirm?
+      Lakshmi
+  label:
+    order: ORD-100058
+    intents:
+      - {intent: order_status, order_id: ORD-100058, mode: AUTO, decision: {delivery_state: out_for_delivery}, entities: {order_ids: [ORD-100058]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100058}, {tracking: BD7849185352IN}]
+
+- id: D017
+  tags: [delayed, multi_item]
+  email:
+    from: {email: rekha.nambiar@example.com, name: Rekha Nambiar}
+    subject: ORD-100096 late
+    received_at: "@now-0.2d"
+    body: |
+      Dear team, my order ORD-100096 was due two days ago. It has earbuds, a hair dryer and dry fruits. Please update me.
+      Rekha
+  label:
+    order: ORD-100096
+    intents:
+      - {intent: order_status, order_id: ORD-100096, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100096], items: [earbuds, hair dryer, dry fruits]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100096}, {tracking: BD1080295047IN}]
+
+- id: D018
+  tags: [lost]
+  email:
+    from: {email: sana.mirza@example.com, name: Sana Mirza}
+    subject: Cookware order missing
+    received_at: "@now-0.3d"
+    body: |
+      Hi, order ORD-100086 (two cookware sets) was supposed to arrive more than a week ago and tracking hasn't moved in ages.
+      Sana
+  label:
+    order: ORD-100086
+    intents:
+      - {intent: order_status, order_id: ORD-100086, mode: ROUTE, decision: {delivery_state: lost}, entities: {order_ids: [ORD-100086], items: [cookware set]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D019
+  tags: [simple, multi_item]
+  email:
+    from: {email: alisha.fernandes@example.com, name: Alisha Fernandes}
+    subject: Where is ORD-100122?
+    received_at: "@now-0.1d"
+    body: |
+      Hello, my trimmer, shoes and innerwear (ORD-100122) should have been here by now, I ordered three days ago. Please check.
+  label:
+    order: ORD-100122
+    intents:
+      - {intent: order_status, order_id: ORD-100122, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100122], items: [trimmer, shoes, innerwear]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100122}, {tracking: BD6484164250IN}]
+    notes: Customer feels it is late, but the promised date is still ahead -> in transit, not delayed.
+
+- id: D020
+  tags: [delayed]
+  email:
+    from: {email: ramesh.iyengar@example.com, name: Ramesh Iyengar}
+    subject: Jacket not received ORD-100135
+    received_at: "@now-0.25d"
+    body: |
+      Sir, the winter jacket in order no. 100135 has not come yet although promised. Kindly inform the status.
+      Ramesh Iyengar
+  label:
+    order: ORD-100135
+    intents:
+      - {intent: order_status, order_id: ORD-100135, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100135], items: [winter jacket]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100135}, {tracking: DL7352851544IN}]
+
+- id: D021
+  tags: [simple]
+  email:
+    from: {email: carlos.ruiz@example.com, name: Carlos Ruiz}
+    subject: Mug order status
+    received_at: "@now-0.1d"
+    body: |
+      Hi, I'd like an update on ORD-100112 (two engraved mugs). They're a gift for Saturday.
+      Carlos
+  label:
+    order: ORD-100112
+    intents:
+      - {intent: order_status, order_id: ORD-100112, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100112], items: [engraved mugs]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100112}, {tracking: DT5609777743IN}]
+      must_not_contain: [{text: "before Saturday"}, {text: "by Saturday"}]
+    notes: The reply must not promise the Saturday deadline; no date in tracking data supports it (FR-30).
+
+- id: D022
+  tags: [simple]
+  email:
+    from: {email: jyoti.rawat@example.com, name: Jyoti Rawat}
+    subject: Air fryer ORD-100060
+    received_at: "@now-0.2d"
+    body: |
+      Namaste, please tell me when the air fryer (ORD-100060) will be delivered. It is cash on delivery so I need to keep money ready.
+      Jyoti
+  label:
+    order: ORD-100060
+    intents:
+      - {intent: order_status, order_id: ORD-100060, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100060], items: [air fryer]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100060}, {tracking: EK5237071180IN}]
+
+- id: D023
+  tags: [no_order_id_single_match]
+  email:
+    from: {email: gurpreet.kaur@example.com, name: Gurpreet Kaur}
+    subject: Has my order shipped yet?
+    received_at: "@now-0.05d"
+    body: |
+      Hi, I placed an order this morning. Has it shipped yet?
+      Gurpreet
+  label:
+    order: ORD-100150
+    intents:
+      - {intent: order_status, order_id: ORD-100150, mode: AUTO, decision: {delivery_state: not_shipped}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100150}]
+
+- id: D024
+  tags: [very_long]
+  email:
+    from: {email: pranav.kulkarni@example.com, name: Pranav Kulkarni}
+    subject: Regarding my order - smartwatches and earbuds for my sister's wedding
+    received_at: "@now-0.1d"
+    body: |
+      Hello,
+
+      I hope you are doing well. I am writing because I am a bit anxious about an order I placed with you. Let me give you some
+      background first so that you understand why this matters so much to me. My younger sister is getting married this weekend
+      and our family has a tradition of giving small gifts to the groom's side, so I decided to order two smartwatches and a pair
+      of wireless earbuds from your website. I have ordered from you many times before, mostly books and kitchen items, and I have
+      always been happy, which is why I chose you again even though a local shop had similar watches.
+
+      The order number is ORD-100107. I placed it a few days ago and I got an email saying it was dispatched. Since then I have been
+      checking the app every few hours. Today the app shows something like "out for delivery" but I am not sure if that means it will
+      come today or tomorrow, and my whole family is going to be out of the house in the evening for the mehendi function, so I need
+      to plan who stays back to receive the parcel. My mother says I worry too much, and she may be right, but I really cannot afford
+      for this to go wrong because the gifts have to be packed and labelled before Friday.
+
+      Also, one more small thing, last time I ordered a pressure cooker the delivery person called me from a number I didn't recognise
+      and I missed the call, so if there is any way to know which number will call, that would be great, but it is not the main issue.
+
+      So my main question is simply: is the parcel really coming today, and can you confirm the tracking details?
+
+      Thank you so much for your patience in reading this long email.
+      Warm regards,
+      Pranav Kulkarni
+  label:
+    order: ORD-100107
+    intents:
+      - {intent: order_status, order_id: ORD-100107, mode: AUTO, decision: {delivery_state: out_for_delivery}, entities: {order_ids: [ORD-100107], items: [smartwatches, wireless earbuds]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100107}, {tracking: DL6604502480IN}]
+      must_not_contain: [{text: "before Friday"}]
+
+- id: D025
+  tags: [angry_legitimate, delayed]
+  email:
+    from: {email: ramesh.iyengar@example.com, name: Ramesh Iyengar}
+    subject: THIS IS RIDICULOUS - ORD-100135
+    received_at: "@now-0.1d"
+    body: |
+      I am completely fed up. Every single time I order from you it is late. The jacket in ORD-100135 was promised days ago and
+      nobody has bothered to tell me anything. This is the worst service I have ever experienced. Where is my jacket???
+  label:
+    order: ORD-100135
+    intents:
+      - {intent: order_status, order_id: ORD-100135, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100135], items: [jacket]}}
+    escalation: [anger]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100135}, {tracking: DL7352851544IN}]
+
+- id: D026
+  tags: [wrong_facts_quoted, delayed]
+  email:
+    from: {email: meera.joshi@example.com, name: Meera Joshi}
+    subject: shoes I paid 4999 for
+    received_at: "@now-0.15d"
+    body: |
+      Hello, I paid ₹4,999 for running shoes (ORD-100007) and you promised delivery by the 20th. It's way past that. Where are they?
+  label:
+    order: ORD-100007
+    intents:
+      - {intent: order_status, order_id: ORD-100007, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100007], amounts: [4999], dates: ["the 20th"], items: [running shoes]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100007}, {tracking: EK2510007635IN}]
+      must_not_contain: [{amount: 4999}]
+    notes: Paid amount was 3,499; the reply must not repeat 4,999 as true.
+
+- id: D027
+  tags: [chargeback_threat]
+  email:
+    from: {email: kavya.menon@example.com, name: Kavya Menon}
+    subject: ORD-100004 - will dispute with bank
+    received_at: "@now-0.05d"
+    body: |
+      If my air fryer (ORD-100004) does not arrive by tomorrow I will raise a chargeback with my bank. Please tell me exactly where it is.
+  label:
+    order: ORD-100004
+    intents:
+      - {intent: order_status, order_id: ORD-100004, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100004]}}
+    escalation: [chargeback_threat]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100004}, {tracking: EK8667526689IN}]
+
+- id: D028
+  tags: [public_complaint_threat, delayed]
+  email:
+    from: {email: pooja.desai@example.com, name: Pooja Desai}
+    subject: Dinner set still not here
+    received_at: "@now-0.1d"
+    body: |
+      My order ORD-100010 is late and your tracking shows nothing new. If I don't hear back today I'm posting about this on Twitter
+      and leaving a review everywhere I can.
+  label:
+    order: ORD-100010
+    intents:
+      - {intent: order_status, order_id: ORD-100010, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100010]}}
+    escalation: [public_complaint_threat]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100010}]
+
+- id: D029
+  tags: [lost_boundary, delayed]
+  email:
+    from: {email: siddharth.bose@example.com, name: Siddharth Bose}
+    subject: Lamp ORD-100009
+    received_at: "@now-0.2d"
+    body: |
+      Hi, just checking on my lamp order ORD-100009, it's a few days late.
+  label:
+    order: ORD-100009
+    intents:
+      - {intent: order_status, order_id: ORD-100009, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100009]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100009}, {tracking: BD9270558599IN}]
+    notes: Same order as D005 but written earlier, when the last update was just under 7 days old -> delayed.

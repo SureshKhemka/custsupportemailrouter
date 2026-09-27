@@ -1,0 +1,115 @@
+# Product questions, complaints and "other": always routed to a human.
+- id: D107
+  tags: [simple]
+  email:
+    from: {email: daniel.fischer@example.com, name: Daniel Fischer}
+    subject: Air fryer question
+    received_at: "@now-0.1d"
+    body: |
+      Is the basket of the Air Fryer 4L dishwasher safe? Thinking of buying one.
+  label:
+    order: not_needed
+    intents:
+      - {intent: product_question, mode: ROUTE, entities: {items: [Air Fryer 4L]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D108
+  tags: [unknown_sender]
+  email:
+    from: {email: curious.buyer@example.net, name: Anil}
+    subject: Smartwatch compatibility
+    received_at: "@now-0.2d"
+    body: |
+      Does the Smartwatch Fit 3 work with iPhones?
+  label:
+    order: not_needed
+    ownership: unknown_sender
+    intents:
+      - {intent: product_question, mode: ROUTE, entities: {items: [Smartwatch Fit 3]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    notes: Unknown senders may still ask product questions; no order data involved.
+
+- id: D109
+  tags: [simple]
+  email:
+    from: {email: varun.khanna@example.com, name: Varun Khanna}
+    subject: App keeps logging me out
+    received_at: "@now-0.1d"
+    body: |
+      Your app logs me out every time I switch apps. It's really annoying, please fix it.
+  label:
+    order: not_needed
+    intents:
+      - {intent: complaint, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D110
+  tags: [simple]
+  email:
+    from: {email: sameer.kohli@example.com, name: Sameer Kohli}
+    subject: GST invoice needed
+    received_at: "@now-0.15d"
+    body: |
+      Please send a GST invoice with my company GSTIN for ORD-100124.
+  label:
+    order: ORD-100124
+    intents:
+      - {intent: other, mode: ROUTE, entities: {order_ids: [ORD-100124]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D111
+  tags: [simple]
+  email:
+    from: {email: gaurav.bhatia@example.com, name: Gaurav Bhatia}
+    subject: Change delivery address
+    received_at: "@now-0.1d"
+    body: |
+      Can you change the delivery address for ORD-100106 to my office in Pune? It hasn't shipped yet.
+  label:
+    order: ORD-100106
+    intents:
+      - {intent: other, mode: ROUTE, entities: {order_ids: [ORD-100106]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D112
+  tags: [simple]
+  email:
+    from: {email: hannah.weber@example.com, name: Hannah Weber}
+    subject: Back in stock?
+    received_at: "@now-0.3d"
+    body: |
+      When will the Bluetooth Speaker Mini be back in stock?
+  label:
+    order: not_needed
+    intents:
+      - {intent: product_question, mode: ROUTE, entities: {items: [Bluetooth Speaker Mini]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D113
+  tags: [simple]
+  email:
+    from: {email: lakshmi.subramanian@example.com, name: Lakshmi Subramanian}
+    subject: Too much plastic packaging
+    received_at: "@now-0.1d"
+    body: |
+      Every order comes wrapped in so much plastic. Please consider eco-friendly packaging, it's wasteful.
+  label:
+    order: not_needed
+    intents:
+      - {intent: complaint, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D114
+  tags: [vip]
+  email:
+    from: {email: emily.carter@example.com, name: Emily Carter}
+    subject: Gift wrapping?
+    received_at: "@now-0.1d"
+    body: |
+      Do you offer gift wrapping for orders? I'd like to send something to a friend.
+  label:
+    order: not_needed
+    intents:
+      - {intent: product_question, mode: ROUTE}
+    escalation: [vip]
+    case: {mode: ROUTE, disposition: routed, queue: general}

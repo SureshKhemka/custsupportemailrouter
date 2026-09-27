@@ -1,0 +1,449 @@
+# Returns (eligibility decided by code, PO-1) and refund status (reported from the refund service).
+- id: D031
+  tags: [simple, return_window_inside]
+  email:
+    from: {email: harsh.vardhan@example.com, name: Harsh Vardhan}
+    subject: Return jeans ORD-100015
+    received_at: "@now-0.1d"
+    body: |
+      Hi, the slim fit jeans from ORD-100015 don't fit well. I'd like to return them please.
+      Harsh
+  label:
+    order: ORD-100015
+    intents:
+      - {intent: return_request, order_id: ORD-100015, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100015], items: [slim fit jeans], remedy: refund}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100015, lines: [{line_id: ORD-100015-L1, qty: 1}]}
+    forbidden_actions: [issue_refund]
+    reply:
+      must_contain: [{order_id: ORD-100015}]
+      must_not_contain: [{text: "refund has been issued"}, {text: "refunded"}]
+    notes: Delivered 29 days ago. The platform refunds after pickup (D-002); the router must not issue or promise a refund date.
+
+- id: D032
+  tags: [return_window_boundary]
+  email:
+    from: {email: amit.chauhan@example.com, name: Amit Chauhan}
+    subject: Return request
+    received_at: "@now-0.1d"
+    body: |
+      Hello, I want to return the jeans I received exactly a month ago, order ORD-100016. Is it still possible?
+  label:
+    order: ORD-100016
+    intents:
+      - {intent: return_request, order_id: ORD-100016, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100016], items: [jeans]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100016, lines: [{line_id: ORD-100016-L1, qty: 1}]}
+    reply:
+      must_contain: [{order_id: ORD-100016}]
+    notes: Day 30 of a 30-day window -> still eligible (last day counts).
+
+- id: D033
+  tags: [return_window_outside, return_window_boundary]
+  email:
+    from: {email: shruti.bhatt@example.com, name: Shruti Bhatt}
+    subject: Want to return jeans ORD-100017
+    received_at: "@now-0.2d"
+    body: |
+      Hi, I'd like to return the jeans from order ORD-100017, they are too tight.
+      Thanks, Shruti
+  label:
+    order: ORD-100017
+    intents:
+      - {intent: return_request, order_id: ORD-100017, mode: DRAFT, decision: {eligible: false, reason: outside_window}, entities: {order_ids: [ORD-100017], items: [jeans]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return, issue_refund]
+    reply:
+      must_contain: [{order_id: ORD-100017}]
+    notes: Day 31 -> outside the window; a human approves the refusal.
+
+- id: D034
+  tags: [return_window_inside]
+  email:
+    from: {email: varun.khanna@example.com, name: Varun Khanna}
+    subject: Exchange for bigger size
+    received_at: "@now-0.1d"
+    body: |
+      Got my jeans yesterday (ORD-100018) but they're too small. Can I exchange them for a size up?
+  label:
+    order: ORD-100018
+    intents:
+      - {intent: return_request, order_id: ORD-100018, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100018], items: [jeans], remedy: exchange}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100018, lines: [{line_id: ORD-100018-L1, qty: 1}]}
+    reply:
+      must_contain: [{order_id: ORD-100018}]
+
+- id: D035
+  tags: [return_window_outside]
+  email:
+    from: {email: aishwarya.das@example.com, name: Aishwarya Das}
+    subject: Return ORD-100019
+    received_at: "@now-0.3d"
+    body: |
+      Hi, I was travelling and only now tried the jeans from ORD-100019. They don't fit. Can I send them back?
+  label:
+    order: ORD-100019
+    intents:
+      - {intent: return_request, order_id: ORD-100019, mode: DRAFT, decision: {eligible: false, reason: outside_window}, entities: {order_ids: [ORD-100019]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D036
+  tags: [non_returnable]
+  email:
+    from: {email: ritika.arora@example.com, name: Ritika Arora}
+    subject: Return dry fruits
+    received_at: "@now-0.1d"
+    body: |
+      Hi, I ordered 1 kg dry fruits (ORD-100028) but I don't need them anymore. Can I return the unopened pack?
+  label:
+    order: ORD-100028
+    intents:
+      - {intent: return_request, order_id: ORD-100028, mode: DRAFT, decision: {eligible: false, reason: non_returnable}, entities: {order_ids: [ORD-100028], items: [dry fruits]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D037
+  tags: [non_returnable]
+  email:
+    from: {email: sanjay.dutta@example.com, name: Sanjay Dutta}
+    subject: Return mug
+    received_at: "@now-0.2d"
+    body: |
+      I want to return the engraved photo mug from ORD-100029, I changed my mind about the gift.
+  label:
+    order: ORD-100029
+    intents:
+      - {intent: return_request, order_id: ORD-100029, mode: DRAFT, decision: {eligible: false, reason: non_returnable}, entities: {order_ids: [ORD-100029], items: [engraved photo mug]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D038
+  tags: [non_returnable]
+  email:
+    from: {email: james.wilson@example.com, name: James Wilson}
+    subject: Returning toothbrush
+    received_at: "@now-0.1d"
+    body: |
+      Hi there, I'd like to return the electric toothbrush from order ORD-100030. I prefer a different brand. It's been used once.
+      James
+  label:
+    order: ORD-100030
+    intents:
+      - {intent: return_request, order_id: ORD-100030, mode: DRAFT, decision: {eligible: false, reason: non_returnable}, entities: {order_ids: [ORD-100030], items: [electric toothbrush]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D039
+  tags: [multi_item, return_window_inside]
+  email:
+    from: {email: olivia.brown@example.com, name: Olivia Brown}
+    subject: Return the t-shirts only
+    received_at: "@now-0.1d"
+    body: |
+      Hello, from order ORD-100034 I want to return both cotton t-shirts. I'm keeping the jeans and the book.
+      Olivia
+  label:
+    order: ORD-100034
+    intents:
+      - intent: return_request
+        order_id: ORD-100034
+        mode: AUTO
+        decision: {eligible: true, reason: eligible, lines: [{line_id: ORD-100034-L2, qty: 2}]}
+        entities: {order_ids: [ORD-100034], items: [cotton t-shirts]}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100034, lines: [{line_id: ORD-100034-L2, qty: 2}]}
+    reply:
+      must_contain: [{order_id: ORD-100034}]
+
+- id: D040
+  tags: [partially_returned, return_window_inside]
+  email:
+    from: {email: maria.lopez@example.com, name: Maria Lopez}
+    subject: Return the shoes too
+    received_at: "@now-0.2d"
+    body: |
+      Hi, I already returned the kurta from ORD-100035. Now I'd like to return the running shoes as well.
+  label:
+    order: ORD-100035
+    intents:
+      - intent: return_request
+        order_id: ORD-100035
+        mode: AUTO
+        decision: {eligible: true, reason: eligible, lines: [{line_id: ORD-100035-L1, qty: 1}]}
+        entities: {order_ids: [ORD-100035], items: [running shoes]}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100035, lines: [{line_id: ORD-100035-L1, qty: 1}]}
+
+- id: D041
+  tags: [already_returned]
+  email:
+    from: {email: riya.chatterjee@example.com, name: Riya Chatterjee}
+    subject: Return pickup?
+    received_at: "@now-0.1d"
+    body: |
+      I asked to return my shoes (ORD-100012) a few days ago. Please return them, when is the pickup coming?
+  label:
+    order: ORD-100012
+    intents:
+      - {intent: return_request, order_id: ORD-100012, mode: DRAFT, decision: {eligible: false, reason: already_returned}, entities: {order_ids: [ORD-100012]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+    notes: A return is already authorised; a second one must not be created.
+
+- id: D042
+  tags: [simple]
+  email:
+    from: {email: manish.agarwal@example.com, name: Manish Agarwal}
+    subject: Refund for returned air fryer
+    received_at: "@now-0.1d"
+    body: |
+      Hi, you picked up the air fryer (ORD-100013) almost two weeks ago. When will I get my refund?
+  label:
+    order: ORD-100013
+    intents:
+      - {intent: refund_status, order_id: ORD-100013, mode: AUTO, decision: {state: initiated, amount: 6999}, entities: {order_ids: [ORD-100013]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    forbidden_actions: [issue_refund]
+    reply:
+      must_contain: [{order_id: ORD-100013}, {amount: 6999}]
+      must_not_contain: [{text: "has been processed"}, {text: "has been credited"}]
+
+- id: D043
+  tags: [simple]
+  email:
+    from: {email: neha.kulkarni@example.com, name: Neha Kulkarni}
+    subject: Refund status ORD-100014
+    received_at: "@now-0.2d"
+    body: |
+      Has the refund for my headphones been processed? Order ORD-100014.
+  label:
+    order: ORD-100014
+    intents:
+      - {intent: refund_status, order_id: ORD-100014, mode: AUTO, decision: {state: processed, amount: 7999}, entities: {order_ids: [ORD-100014]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100014}, {amount: 7999}]
+
+- id: D044
+  tags: [simple]
+  email:
+    from: {email: nikhil.verma@example.com, name: Nikhil Verma}
+    subject: Money for cancelled order
+    received_at: "@now-0.1d"
+    body: |
+      I cancelled my jeans order last week. Did the money come back to my account?
+      Nikhil
+  label:
+    order: ORD-100011
+    intents:
+      - {intent: refund_status, order_id: ORD-100011, mode: AUTO, decision: {state: processed, amount: 1999}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100011}, {amount: 1999}]
+
+- id: D045
+  tags: [simple]
+  email:
+    from: {email: rekha.nambiar@example.com, name: Rekha Nambiar}
+    subject: Headphones refund ORD-100055
+    received_at: "@now-0.1d"
+    body: |
+      Please confirm the refund for the returned noise cancelling headphones, order ORD-100055.
+  label:
+    order: ORD-100055
+    intents:
+      - {intent: refund_status, order_id: ORD-100055, mode: AUTO, decision: {state: processed, amount: 7999}, entities: {order_ids: [ORD-100055]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100055}, {amount: 7999}]
+
+- id: D046
+  tags: [simple]
+  email:
+    from: {email: lakshmi.subramanian@example.com, name: Lakshmi Subramanian}
+    subject: Phone refund pending
+    received_at: "@now-0.2d"
+    body: |
+      I returned the phone from ORD-100147. The refund still hasn't reached me. What's the status?
+  label:
+    order: ORD-100147
+    intents:
+      - {intent: refund_status, order_id: ORD-100147, mode: AUTO, decision: {state: initiated, amount: 24999}, entities: {order_ids: [ORD-100147]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100147}, {amount: 24999}]
+
+- id: D047
+  tags: [simple]
+  email:
+    from: {email: jyoti.rawat@example.com, name: Jyoti Rawat}
+    subject: Kurta refund
+    received_at: "@now-0.1d"
+    body: |
+      Refund for kurta return ORD-100078 - is it done?
+  label:
+    order: ORD-100078
+    intents:
+      - {intent: refund_status, order_id: ORD-100078, mode: AUTO, decision: {state: initiated, amount: 1499}, entities: {order_ids: [ORD-100078]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100078}, {amount: 1499}]
+
+- id: D048
+  tags: [simple]
+  email:
+    from: {email: sana.mirza@example.com, name: Sana Mirza}
+    subject: Cancelled order refund ORD-100157
+    received_at: "@now-0.25d"
+    body: |
+      Hi, I cancelled ORD-100157 (headphones and t-shirts). Has my refund been sent to the bank?
+  label:
+    order: ORD-100157
+    intents:
+      - {intent: refund_status, order_id: ORD-100157, mode: AUTO, decision: {state: processed, amount: 9697}, entities: {order_ids: [ORD-100157]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100157}, {amount: 9697}]
+
+- id: D049
+  tags: [wrong_facts_quoted]
+  email:
+    from: {email: gaurav.bhatia@example.com, name: Gaurav Bhatia}
+    subject: Where is my refund?
+    received_at: "@now-0.1d"
+    body: |
+      I was told I'd get a refund of ₹1,599 for the hair dryer in ORD-100074. Nothing yet. Please check.
+  label:
+    order: ORD-100074
+    intents:
+      - {intent: refund_status, order_id: ORD-100074, mode: AUTO, decision: {state: none, amount: 0.0}, entities: {order_ids: [ORD-100074], amounts: [1599]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    forbidden_actions: [issue_refund]
+    reply:
+      must_contain: [{order_id: ORD-100074}]
+      must_not_contain: [{text: "refund of ₹1,599 has been"}, {text: "refund has been initiated"}]
+    notes: No refund exists; the reply must say none is on record, not confirm the customer's claim.
+
+- id: D050
+  tags: [return_window_outside]
+  email:
+    from: {email: gaurav.bhatia@example.com, name: Gaurav Bhatia}
+    subject: Return chargers ORD-100144
+    received_at: "@now-0.2d"
+    body: |
+      I want to return the two USB-C chargers from order ORD-100144. They charge my phone slowly.
+  label:
+    order: ORD-100144
+    intents:
+      - {intent: return_request, order_id: ORD-100144, mode: DRAFT, decision: {eligible: false, reason: outside_window}, entities: {order_ids: [ORD-100144], items: [USB-C chargers]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D051
+  tags: [multi_item, return_window_inside]
+  email:
+    from: {email: alisha.fernandes@example.com, name: Alisha Fernandes}
+    subject: Return both jeans
+    received_at: "@now-0.1d"
+    body: |
+      From ORD-100121 I'd like to return the two pairs of slim fit jeans. The bedsheet and chargers are fine.
+  label:
+    order: ORD-100121
+    intents:
+      - intent: return_request
+        order_id: ORD-100121
+        mode: AUTO
+        decision: {eligible: true, reason: eligible, lines: [{line_id: ORD-100121-L2, qty: 2}]}
+        entities: {order_ids: [ORD-100121], items: [slim fit jeans]}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100121, lines: [{line_id: ORD-100121-L2, qty: 2}]}
+
+- id: D052
+  tags: [non_returnable, multi_item]
+  email:
+    from: {email: alisha.fernandes@example.com, name: Alisha Fernandes}
+    subject: Return toothbrush from ORD-100109
+    received_at: "@now-0.2d"
+    body: |
+      Hi, please arrange a return for the electric toothbrush in ORD-100109. Keeping the charger.
+  label:
+    order: ORD-100109
+    intents:
+      - intent: return_request
+        order_id: ORD-100109
+        mode: DRAFT
+        decision: {eligible: false, reason: non_returnable, lines: [{line_id: ORD-100109-L2, qty: 1}]}
+        entities: {order_ids: [ORD-100109], items: [electric toothbrush]}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D053
+  tags: [non_returnable]
+  email:
+    from: {email: carlos.ruiz@example.com, name: Carlos Ruiz}
+    subject: Return innerwear
+    received_at: "@now-0.1d"
+    body: |
+      Hi, the innerwear pack from ORD-100128 is the wrong size, still sealed. Can I return it?
+  label:
+    order: ORD-100128
+    intents:
+      - {intent: return_request, order_id: ORD-100128, mode: DRAFT, decision: {eligible: false, reason: non_returnable}, entities: {order_ids: [ORD-100128], items: [innerwear pack]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D054
+  tags: [return_window_inside]
+  email:
+    from: {email: rekha.nambiar@example.com, name: Rekha Nambiar}
+    subject: Return serum ORD-100167
+    received_at: "@now-0.15d"
+    body: |
+      Hello, the vitamin C serum from ORD-100167 caused irritation, it's barely used. I'd like to return it.
+  label:
+    order: ORD-100167
+    intents:
+      - {intent: return_request, order_id: ORD-100167, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100167], items: [vitamin C serum]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100167, lines: [{line_id: ORD-100167-L1, qty: 1}]}
+
+- id: D055
+  tags: [return_window_inside]
+  email:
+    from: {email: sana.mirza@example.com, name: Sana Mirza}
+    subject: Dinner set return
+    received_at: "@now-0.1d"
+    body: |
+      I want to return the ceramic dinner set, ORD-100130. The colour looks different from the photos.
+  label:
+    order: ORD-100130
+    intents:
+      - {intent: return_request, order_id: ORD-100130, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100130], items: [ceramic dinner set]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100130, lines: [{line_id: ORD-100130-L1, qty: 1}]}
+
+- id: D056
+  tags: [not_delivered]
+  email:
+    from: {email: ramesh.iyengar@example.com, name: Ramesh Iyengar}
+    subject: Return the jacket
+    received_at: "@now-0.2d"
+    body: |
+      The jacket in ORD-100135 is taking too long. I don't want it anymore, please take it back and return my money.
+  label:
+    order: ORD-100135
+    intents:
+      - {intent: return_request, order_id: ORD-100135, mode: DRAFT, decision: {eligible: false, reason: not_delivered}, entities: {order_ids: [ORD-100135], remedy: refund}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return, issue_refund, cancel_order]
+    notes: Not delivered yet (and already shipped, so not cancellable); a human decides what to offer.

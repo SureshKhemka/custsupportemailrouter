@@ -1,0 +1,383 @@
+# DS-7: replies with quality ratings, used to measure how well the LLM judge agrees with humans (EV-8).
+# Scale 1-5 per rubric (correctness, completeness, tone, clarity, language) plus overall.
+# STATUS: ratings are DRAFTS proposed by Claude (rated_by: claude-draft). A human must review and
+# adjust them (set rated_by to the reviewer) before they count as human judgement.
+# All records are from the dev split; the test split is never used here.
+
+- id: R001
+  record: D001
+  reply: |
+    Hi Kavya,
+    Thanks for reaching out. Your air fryer (order ORD-100004) is on its way and currently in transit. You can follow it with
+    tracking number EK8667526689IN on the courier's website.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Accurate status and tracking, friendly, concise.
+  rated_by: claude-draft
+
+- id: R002
+  record: D001
+  reply: |
+    Order ORD-100004: IN_TRANSIT. Tracking EK8667526689IN.
+  ratings: {correctness: 5, completeness: 4, tone: 2, clarity: 4, language: 5}
+  overall: 3
+  reason: Correct facts but reads like a system dump; no greeting or empathy.
+  rated_by: claude-draft
+
+- id: R003
+  record: D003
+  reply: |
+    Hi Meera,
+    I'm sorry your running shoes (ORD-100007) are running late. They're still in transit with the courier and have passed the
+    original delivery date. Tracking number: EK2510007635IN. We'll keep an eye on it and you can also track it directly.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Acknowledges delay, accurate, no invented delivery date.
+  rated_by: claude-draft
+
+- id: R004
+  record: D003
+  reply: |
+    Hi Meera,
+    Your shoes are delayed but will definitely arrive tomorrow. Sorry for the trouble!
+    Customer Care
+  ratings: {correctness: 1, completeness: 2, tone: 4, clarity: 4, language: 5}
+  overall: 2
+  reason: Invents a delivery date not in tracking data; no order id or tracking.
+  rated_by: claude-draft
+
+- id: R005
+  record: D007
+  reply: |
+    Hi Rohan,
+    Your smartphone order ORD-100001 has been placed and is being prepared. It hasn't shipped yet; you'll get tracking details as
+    soon as it does.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Handles a vague email well by identifying the only recent order.
+  rated_by: claude-draft
+
+- id: R006
+  record: D010
+  reply: |
+    Hello Irfan,
+    Your power bank (ORD-100043) is in transit. Tracking: DT7700757076IN.
+    Regards
+  ratings: {correctness: 5, completeness: 4, tone: 4, clarity: 5, language: 5}
+  overall: 4
+  reason: Correct and clear; slightly curt and doesn't address the Kolkata question.
+  rated_by: claude-draft
+
+- id: R007
+  record: D014
+  reply: |
+    Dear Aarav,
+    Thank you for your message. Your puffer jacket (ORD-100047) is in transit, tracking number DL9462993640IN. It is currently
+    expected within the promised delivery window, ahead of your travel next week.
+    Kind regards, Customer Care
+  ratings: {correctness: 4, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 4
+  reason: Good, but "ahead of your travel" edges toward a promise; better to state the promised date only.
+  rated_by: claude-draft
+
+- id: R008
+  record: D021
+  reply: |
+    Hi Carlos,
+    Your engraved mugs (ORD-100112) are in transit (tracking DT5609777743IN). I can't guarantee they'll arrive before Saturday,
+    but you can follow the parcel with the tracking number.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
+  overall: 5
+  reason: Honest about the deadline without over-promising.
+  rated_by: claude-draft
+
+- id: R009
+  record: D026
+  reply: |
+    Hi Meera,
+    Thanks for your patience. Your running shoes (ORD-100007) are delayed and still in transit; tracking EK2510007635IN.
+    For reference, the amount paid for this order was ₹3,499.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
+  overall: 5
+  reason: Correctly does not repeat the customer's wrong amount.
+  rated_by: claude-draft
+
+- id: R010
+  record: D026
+  reply: |
+    Hi Meera,
+    We're sorry your ₹4,999 shoes haven't arrived by the 20th as promised. They are in transit (EK2510007635IN).
+    Customer Care
+  ratings: {correctness: 1, completeness: 3, tone: 4, clarity: 4, language: 5}
+  overall: 2
+  reason: Repeats the wrong amount and the wrong promised date as facts.
+  rated_by: claude-draft
+
+- id: R011
+  record: D031
+  reply: |
+    Hi Harsh,
+    We've set up a return for the slim fit jeans in ORD-100015. Our courier will contact you to arrange pickup. Once the item is
+    received and checked, the refund goes to your original payment method.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Correct next steps; no refund date promised.
+  rated_by: claude-draft
+
+- id: R012
+  record: D031
+  reply: |
+    Hi Harsh, your refund of ₹1,999 has been processed for ORD-100015. Please keep the jeans.
+  ratings: {correctness: 1, completeness: 1, tone: 3, clarity: 4, language: 5}
+  overall: 1
+  reason: Claims a refund that did not happen and gives the item away; wrong outcome entirely.
+  rated_by: claude-draft
+
+- id: R013
+  record: D033
+  reply: |
+    Hi Shruti,
+    Thanks for getting in touch. Unfortunately ORD-100017 was delivered 31 days ago, and our return window is 30 days from
+    delivery, so we're unable to accept this return. I'm sorry for the inconvenience.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
+  overall: 5
+  reason: Clear, correct policy explanation with empathy.
+  rated_by: claude-draft
+
+- id: R014
+  record: D033
+  reply: |
+    Returns not possible after 30 days. Request denied.
+  ratings: {correctness: 4, completeness: 3, tone: 1, clarity: 4, language: 5}
+  overall: 2
+  reason: Technically right but cold and missing order reference.
+  rated_by: claude-draft
+
+- id: R015
+  record: D036
+  reply: |
+    Hi Ritika,
+    Thanks for writing to us. Dry fruits are a perishable item and, as per our returns policy, perishable products can't be
+    returned once delivered, even if unopened. I'm sorry we can't help with a return on ORD-100028.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Correct reason, polite.
+  rated_by: claude-draft
+
+- id: R016
+  record: D042
+  reply: |
+    Hi Manish,
+    The refund of ₹6,999 for ORD-100013 has been initiated to your original payment method. Banks usually take a few working days
+    to show it.
+    Warm regards, Customer Care
+  ratings: {correctness: 4, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 4
+  reason: Accurate; the "few working days" line is generic guidance, acceptable but not from backend data.
+  rated_by: claude-draft
+
+- id: R017
+  record: D042
+  reply: |
+    Hi Manish, your refund has been credited to your account.
+  ratings: {correctness: 1, completeness: 2, tone: 3, clarity: 4, language: 5}
+  overall: 1
+  reason: States the refund was credited while it is only initiated.
+  rated_by: claude-draft
+
+- id: R018
+  record: D044
+  reply: |
+    Hi Nikhil,
+    Yes, the refund of ₹1,999 for your cancelled order ORD-100011 has been processed to your original payment method.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Correct and direct.
+  rated_by: claude-draft
+
+- id: R019
+  record: D049
+  reply: |
+    Hi Gaurav,
+    I checked ORD-100074 and there is no refund recorded for this order. Could you share where you were told about the ₹1,599
+    refund? A colleague will look into it.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 4, tone: 5, clarity: 5, language: 5}
+  overall: 4
+  reason: Correctly avoids confirming the claim; slightly promises follow-up.
+  rated_by: claude-draft
+
+- id: R020
+  record: D057
+  reply: |
+    Hi Deepak,
+    I'm really sorry the dinner set from ORD-100020 arrived with cracked plates, and thank you for the photos. We'd like to send
+    you a replacement set. Please reply to confirm and we'll arrange it right away.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Right remedy per policy, empathetic.
+  rated_by: claude-draft
+
+- id: R021
+  record: D058
+  reply: |
+    Hi Farhan,
+    Sorry to hear about the broken bowl in ORD-100021. To process a replacement, could you please send us a photo of the damage?
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Correctly asks for a photo (item above threshold).
+  rated_by: claude-draft
+
+- id: R022
+  record: D058
+  reply: |
+    Hi Farhan, we've shipped a replacement dinner set, it will reach you in 2 days.
+  ratings: {correctness: 1, completeness: 2, tone: 3, clarity: 4, language: 5}
+  overall: 1
+  reason: Claims a replacement that wasn't created; skips the required photo.
+  rated_by: claude-draft
+
+- id: R023
+  record: D062
+  reply: |
+    Hi Kunal,
+    We're sorry the cookware set from ORD-100025 is defective. Since this item is currently out of stock, we'll refund ₹5,499 to
+    your original payment method once approved.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Correct remedy and amount.
+  rated_by: claude-draft
+
+- id: R024
+  record: D063
+  reply: |
+    Hi Anjali,
+    Sorry the book arrived damaged. As per policy we'll send you a replacement copy of The Pragmatic Cook for ORD-100026.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 3, tone: 4, clarity: 5, language: 5}
+  overall: 4
+  reason: Correct remedy but ignores the customer's explicit refund request without explanation.
+  rated_by: claude-draft
+
+- id: R025
+  record: D064
+  reply: |
+    Hello Mohit, apologies for the mix-up with ORD-100027! We'll send two white cotton crew t-shirts as a replacement. You can
+    keep or donate the polo shirts.
+    Customer Care
+  ratings: {correctness: 3, completeness: 4, tone: 5, clarity: 5, language: 5}
+  overall: 3
+  reason: Right remedy, but "keep the polo shirts" is not in policy.
+  rated_by: claude-draft
+
+- id: R026
+  record: D085
+  reply: |
+    Hi Arjun,
+    Your order ORD-100048 has been cancelled as requested.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 4, tone: 4, clarity: 5, language: 5}
+  overall: 4
+  reason: Correct; could mention how the payment is returned.
+  rated_by: claude-draft
+
+- id: R027
+  record: D087
+  reply: |
+    Hi Suresh,
+    Your order ORD-100050 has already shipped, so we can no longer cancel it. Once it's delivered you can request a return within
+    30 days.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
+  overall: 5
+  reason: Correct and offers the policy-backed alternative.
+  rated_by: claude-draft
+
+- id: R028
+  record: D099
+  reply: |
+    Hi Shruti,
+    I understand your frustration, and I'm sorry. ORD-100017 is one day past our 30-day return window, so I can't approve the
+    return automatically. I've passed your request to a senior colleague who will get back to you.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Empathetic, accurate, escalates without promising the exception.
+  rated_by: claude-draft
+
+- id: R029
+  record: D099
+  reply: |
+    Hi Shruti, rules are rules. The window is 30 days and you missed it.
+  ratings: {correctness: 4, completeness: 3, tone: 1, clarity: 4, language: 5}
+  overall: 2
+  reason: Dismissive tone toward an upset customer.
+  rated_by: claude-draft
+
+- id: R030
+  record: D104
+  reply: |
+    Hi Manish,
+    I'm sorry for the wait. Your refund of ₹6,999 for ORD-100013 has been initiated and is on its way to your original payment
+    method. I understand how frustrating the delay is.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 5, clarity: 5, language: 5}
+  overall: 5
+  reason: Correct and empathetic.
+  rated_by: claude-draft
+
+- id: R031
+  record: D132
+  reply: |
+    Hi Tom,
+    We've set up a return for the desk lamp from ORD-100036. Your bedsheet (ORD-100037) is running late and is still in transit;
+    tracking number EK9387770272IN.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
+  overall: 5
+  reason: Covers both intents in one coherent reply.
+  rated_by: claude-draft
+
+- id: R032
+  record: D132
+  reply: |
+    Hi Tom,
+    We've set up a return for the desk lamp from ORD-100036.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 2, tone: 4, clarity: 5, language: 5}
+  overall: 3
+  reason: Misses the second question about the bedsheet.
+  rated_by: claude-draft
+
+- id: R033
+  record: D146
+  reply: |
+    Hi Sana,
+    Your desk lamp (ORD-100142) is in transit, tracking EK6012786276IN. The refund of ₹9,697 for your cancelled order ORD-100157 has
+    been processed to your original payment method.
+    Warm regards, Customer Care
+  ratings: {correctness: 5, completeness: 5, tone: 4, clarity: 5, language: 5}
+  overall: 5
+  reason: Both parts answered accurately.
+  rated_by: claude-draft
+
+- id: R034
+  record: D141
+  reply: |
+    hi lakshmi both orders coming today i think. thx
+  ratings: {correctness: 3, completeness: 2, tone: 2, clarity: 2, language: 3}
+  overall: 2
+  reason: Vague, unprofessional, no tracking, hedged facts.
+  rated_by: claude-draft

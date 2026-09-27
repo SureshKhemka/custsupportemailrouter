@@ -1,0 +1,274 @@
+# Threads, duplicates and follow-ups (FR-2..FR-4, FR-16 repeat contact).
+# Records sharing a `group` are processed together in received_at order, with fresh state per group.
+- id: D170
+  group: G-D170
+  tags: [duplicate_submission]
+  email:
+    message_id: "<kavya-airfryer-1@mail.example.com>"
+    from: {email: kavya.menon@example.com, name: Kavya Menon}
+    subject: Air fryer ORD-100004
+    received_at: "@now-0.3d"
+    body: |
+      Hi, where is my air fryer, order ORD-100004?
+  label:
+    order: ORD-100004
+    intents:
+      - {intent: order_status, order_id: ORD-100004, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100004]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100004}, {tracking: EK8667526689IN}]
+
+- id: D171
+  group: G-D170
+  tags: [duplicate_submission]
+  email:
+    message_id: "<kavya-airfryer-1@mail.example.com>"
+    from: {email: kavya.menon@example.com, name: Kavya Menon}
+    subject: Air fryer ORD-100004
+    received_at: "@now-0.29d"
+    body: |
+      Hi, where is my air fryer, order ORD-100004?
+  label:
+    order: ORD-100004
+    intents:
+      - {intent: order_status, order_id: ORD-100004, mode: AUTO, entities: {order_ids: [ORD-100004]}}
+    case: {mode: CLOSE, disposition: duplicate_ignored}
+    forbidden_actions: [send_reply]
+    notes: Same message id delivered twice -> processed once, one reply only (FR-2).
+
+- id: D172
+  group: G-D172
+  tags: [near_duplicate, delayed]
+  email:
+    from: {email: meera.joshi@example.com, name: Meera Joshi}
+    subject: Shoes ORD-100007
+    received_at: "@now-0.3d"
+    body: |
+      My shoes ORD-100007 are late. Where are they?
+  label:
+    order: ORD-100007
+    intents:
+      - {intent: order_status, order_id: ORD-100007, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100007]}}
+    case: {mode: AUTO, disposition: auto_replied}
+
+- id: D173
+  group: G-D172
+  tags: [near_duplicate, duplicate_submission]
+  email:
+    from: {email: meera.joshi@example.com, name: Meera Joshi}
+    subject: Re-sending - shoes ORD-100007
+    received_at: "@now-0.29d"
+    body: |
+      Sending again in case the first one didn't go through: my running shoes ORD-100007 are late, where are they?
+  label:
+    order: ORD-100007
+    intents:
+      - {intent: order_status, order_id: ORD-100007, mode: AUTO, entities: {order_ids: [ORD-100007]}}
+    case: {mode: CLOSE, disposition: merged}
+    forbidden_actions: [send_reply]
+    notes: New message id, same sender and issue, 14 minutes later -> merged into the open case, no second reply (FR-3).
+
+- id: D174
+  group: G-D174
+  tags: [follow_up]
+  email:
+    message_id: "<irfan-pb-1@mail.example.com>"
+    from: {email: irfan.sheikh@example.com, name: Irfan Sheikh}
+    subject: Power bank ORD-100043
+    received_at: "@now-0.4d"
+    body: |
+      Hi, what's the status of my power bank, ORD-100043?
+  label:
+    order: ORD-100043
+    intents:
+      - {intent: order_status, order_id: ORD-100043, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100043]}}
+    case: {mode: AUTO, disposition: auto_replied}
+
+- id: D175
+  group: G-D174
+  tags: [follow_up]
+  email:
+    message_id: "<irfan-pb-2@mail.example.com>"
+    in_reply_to: "<irfan-pb-1@mail.example.com>"
+    thread_id: "<irfan-pb-1@mail.example.com>"
+    from: {email: irfan.sheikh@example.com, name: Irfan Sheikh}
+    subject: "Re: Power bank ORD-100043"
+    received_at: "@now-0.05d"
+    body: |
+      Thanks, but the tracking still shows the same place as this morning. Is it moving at all?
+  label:
+    order: ORD-100043
+    intents:
+      - {intent: order_status, order_id: ORD-100043, mode: AUTO, decision: {delivery_state: in_transit}}
+    escalation: [repeat_contact]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{tracking: DT7700757076IN}]
+    notes: Second contact on the same issue -> repeat-contact escalation; joins the existing case (FR-4).
+
+- id: D176
+  tags: [third_contact, vip, delayed]
+  email:
+    from: {email: nandini.hegde@example.com, name: Nandini Hegde}
+    subject: THIRD time asking - mixer grinder ORD-100052
+    received_at: "@now-0.1d"
+    body: |
+      I emailed on Monday and called two days ago about ORD-100052. I was promised an update within 48 hours. Nothing. Where is it?
+  label:
+    order: ORD-100052
+    intents:
+      - {intent: order_status, order_id: ORD-100052, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100052]}}
+    escalation: [repeat_contact, vip]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100052}, {tracking: EK5101895339IN}]
+      must_not_contain: [{text: "within 48 hours"}]
+    notes: Two earlier contacts in the customer's contact history -> this is the third.
+
+- id: D177
+  tags: [follow_up, delayed]
+  email:
+    from: {email: tanvi.shah@example.com, name: Tanvi Shah}
+    subject: Still waiting - ORD-100051
+    received_at: "@now-0.1d"
+    body: |
+      I asked about my running shoes (ORD-100051) two days ago and was told they're in transit. They're now late. Please help.
+  label:
+    order: ORD-100051
+    intents:
+      - {intent: order_status, order_id: ORD-100051, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100051]}}
+    escalation: [repeat_contact]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100051}, {tracking: EK4027541459IN}]
+
+- id: D178
+  group: G-D178
+  tags: [follow_up]
+  email:
+    message_id: "<sneha-hd-1@mail.example.com>"
+    from: {email: sneha.reddy@example.com, name: Sneha Reddy}
+    subject: Hair dryer ORD-100003
+    received_at: "@now-0.35d"
+    body: |
+      Hi, can you share the tracking for ORD-100003?
+  label:
+    order: ORD-100003
+    intents:
+      - {intent: order_status, order_id: ORD-100003, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100003]}}
+    case: {mode: AUTO, disposition: auto_replied}
+
+- id: D179
+  group: G-D178
+  tags: [follow_up]
+  email:
+    message_id: "<sneha-hd-2@mail.example.com>"
+    in_reply_to: "<sneha-hd-1@mail.example.com>"
+    thread_id: "<sneha-hd-1@mail.example.com>"
+    from: {email: sneha.reddy@example.com, name: Sneha Reddy}
+    subject: "Re: Hair dryer ORD-100003"
+    received_at: "@now-0.2d"
+    body: |
+      The tracking link isn't loading. Can you just tell me the expected delivery date?
+  label:
+    order: ORD-100003
+    intents:
+      - {intent: order_status, order_id: ORD-100003, mode: AUTO, decision: {delivery_state: in_transit}}
+    escalation: [repeat_contact]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+
+- id: D180
+  group: G-D178
+  tags: [third_contact, angry_legitimate]
+  email:
+    message_id: "<sneha-hd-3@mail.example.com>"
+    in_reply_to: "<sneha-hd-2@mail.example.com>"
+    thread_id: "<sneha-hd-1@mail.example.com>"
+    from: {email: sneha.reddy@example.com, name: Sneha Reddy}
+    subject: "Re: Re: Hair dryer ORD-100003"
+    received_at: "@now-0.02d"
+    body: |
+      Third email today and still no proper answer. This is really annoying. I just want a date!
+  label:
+    order: ORD-100003
+    intents:
+      - {intent: order_status, order_id: ORD-100003, mode: AUTO, decision: {delivery_state: in_transit}}
+    escalation: [repeat_contact, anger]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+
+- id: D181
+  group: G-D181
+  tags: [duplicate_submission, return_window_inside]
+  email:
+    message_id: "<harsh-return-1@mail.example.com>"
+    from: {email: harsh.vardhan@example.com, name: Harsh Vardhan}
+    subject: Return ORD-100015
+    received_at: "@now-0.3d"
+    body: |
+      Please start a return for the jeans in ORD-100015.
+  label:
+    order: ORD-100015
+    intents:
+      - {intent: return_request, order_id: ORD-100015, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100015]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100015, lines: [{line_id: ORD-100015-L1, qty: 1}]}
+
+- id: D182
+  group: G-D181
+  tags: [duplicate_submission]
+  email:
+    message_id: "<harsh-return-1@mail.example.com>"
+    from: {email: harsh.vardhan@example.com, name: Harsh Vardhan}
+    subject: Return ORD-100015
+    received_at: "@now-0.28d"
+    body: |
+      Please start a return for the jeans in ORD-100015.
+  label:
+    order: ORD-100015
+    intents:
+      - {intent: return_request, order_id: ORD-100015, mode: AUTO, entities: {order_ids: [ORD-100015]}}
+    case: {mode: CLOSE, disposition: duplicate_ignored}
+    forbidden_actions: [create_return, send_reply]
+    notes: Replayed delivery must not create a second return (HG-4).
+
+- id: D183
+  group: G-D183
+  tags: [follow_up, return_window_inside]
+  email:
+    message_id: "<varun-jeans-1@mail.example.com>"
+    from: {email: varun.khanna@example.com, name: Varun Khanna}
+    subject: Return jeans ORD-100018
+    received_at: "@now-0.3d"
+    body: |
+      I'd like to return the jeans from ORD-100018, too small.
+  label:
+    order: ORD-100018
+    intents:
+      - {intent: return_request, order_id: ORD-100018, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100018]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100018, lines: [{line_id: ORD-100018-L1, qty: 1}]}
+
+- id: D184
+  group: G-D183
+  tags: [follow_up]
+  email:
+    message_id: "<varun-jeans-2@mail.example.com>"
+    in_reply_to: "<varun-jeans-1@mail.example.com>"
+    thread_id: "<varun-jeans-1@mail.example.com>"
+    from: {email: varun.khanna@example.com, name: Varun Khanna}
+    subject: "Re: Return jeans ORD-100018"
+    received_at: "@now-0.05d"
+    body: |
+      Thanks for setting up the return. How long after pickup will I get my refund?
+  label:
+    order: ORD-100018
+    intents:
+      - {intent: refund_status, order_id: ORD-100018, mode: AUTO, decision: {state: none, amount: 0.0}}
+    escalation: [repeat_contact]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return, issue_refund]
+    reply:
+      must_not_contain: [{text: "refund has been initiated"}]
+    notes: Follow-up joins the case; the return already exists and must not be created again.

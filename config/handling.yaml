@@ -1,0 +1,38 @@
+handling:
+  # Behaviour choices that may be tuned from eval results or per case type.
+  # FR-19 invariants are enforced in code regardless of these settings.
+
+  escalation:
+    # FR-16: an escalation signal on a case that would otherwise be AUTO sends it to a human as:
+    #   DRAFT = reply prepared, human approves/edits/rejects
+    #   ROUTE = human owns the case; draft attached as a suggestion
+    auto_becomes: DRAFT
+    per_intent: {}              # e.g. {order_status: ROUTE}
+
+  multi_intent:
+    # FR-20: when the case is NOT AUTO, what happens to actions of intents that would be AUTO on their own?
+    #   hold = nothing runs; the human sees proposed actions and approves them with the reply
+    #   run  = run them now (only actions that move no money: create return, cancel before ship)
+    actions_when_case_not_auto: hold
+    per_intent: {}              # only return_request / cancel_order may be set
+
+  injection:
+    # FR-17: a prompt-injection attempt never changes a decision. Additionally:
+    #   escalate  = treat as an escalation signal (AUTO -> escalation.auto_becomes)
+    #   flag_only = record the flag, process normally
+    on_detect: escalate
+
+  identity:
+    # FR-10: unknown sender, or sender does not own the referenced order.
+    #   template_reply = send the generic "write from your registered address" reply and flag the case
+    #   route          = no reply; a human handles it
+    # Either way no order details are disclosed and no action is taken.
+    on_unverified: template_reply
+
+  ambiguous_order:
+    # FR-11: several candidate orders and the email does not say which.
+    #   clarify = ask the customer which order (template reply)
+    #   route   = a human decides
+    on_ambiguous: clarify
+    # FR-8: how far back to look for candidate orders when no order id is given.
+    candidate_window_days: 60

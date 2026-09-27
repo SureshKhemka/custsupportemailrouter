@@ -1,0 +1,382 @@
+# Multi-intent emails (FR-20, FR-21): strictest mode wins; one coherent reply per case.
+- id: D131
+  tags: [multi_intent, late_plus_double_charge]
+  email:
+    from: {email: hannah.weber@example.com, name: Hannah Weber}
+    subject: Late AND charged twice - ORD-100038
+    received_at: "@now-0.1d"
+    body: |
+      Hi, my smartwatch (ORD-100038) was due yesterday and hasn't arrived. On top of that, I see two charges of ₹8,999 on my card.
+      Please tell me where the watch is and refund the second charge.
+  label:
+    order: ORD-100038
+    intents:
+      - {intent: order_status, order_id: ORD-100038, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100038]}}
+      - {intent: billing_dispute, order_id: ORD-100038, mode: ROUTE, decision: {duplicate_charge: true}, entities: {order_ids: [ORD-100038], amounts: [8999], remedy: refund}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    forbidden_actions: [issue_refund]
+    reply:
+      must_contain: [{order_id: ORD-100038}, {tracking: EK7875602983IN}]
+    notes: Draft for the order-status part is attached for the billing agent; the refund decision is the agent's.
+
+- id: D132
+  tags: [multi_intent, return_one_where_other, return_window_inside, delayed]
+  email:
+    from: {email: tom.becker@example.com, name: Tom Becker}
+    subject: Return the lamp, where is the bedsheet?
+    received_at: "@now-0.1d"
+    body: |
+      Hi, I placed two orders on the same day. I want to return the desk lamp from ORD-100036, it's too bright.
+      And where is the bedsheet from ORD-100037? It's late.
+      Tom
+  label:
+    order: ORD-100036
+    intents:
+      - {intent: return_request, order_id: ORD-100036, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100036], items: [desk lamp]}}
+      - {intent: order_status, order_id: ORD-100037, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100037], items: [bedsheet]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100036, lines: [{line_id: ORD-100036-L1, qty: 1}]}
+    reply:
+      must_contain: [{order_id: ORD-100036}, {order_id: ORD-100037}, {tracking: EK9387770272IN}]
+
+- id: D133
+  tags: [multi_intent]
+  email:
+    from: {email: gaurav.bhatia@example.com, name: Gaurav Bhatia}
+    subject: Two orders
+    received_at: "@now-0.15d"
+    body: |
+      Please cancel ORD-100117 (bedsheet). Also, when will ORD-100106, the air fryer, ship?
+  label:
+    order: ORD-100117
+    intents:
+      - {intent: cancel_order, order_id: ORD-100117, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100117]}}
+      - {intent: order_status, order_id: ORD-100106, mode: AUTO, decision: {delivery_state: not_shipped}, entities: {order_ids: [ORD-100106]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100117}
+    reply:
+      must_contain: [{order_id: ORD-100117}, {order_id: ORD-100106}]
+
+- id: D134
+  tags: [multi_intent, return_window_inside]
+  email:
+    from: {email: rekha.nambiar@example.com, name: Rekha Nambiar}
+    subject: Return serum + headphone refund
+    received_at: "@now-0.1d"
+    body: |
+      Two things: I want to return the serum from ORD-100167. And has the refund for the headphones (ORD-100055) been completed?
+  label:
+    order: ORD-100167
+    intents:
+      - {intent: return_request, order_id: ORD-100167, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100167]}}
+      - {intent: refund_status, order_id: ORD-100055, mode: AUTO, decision: {state: processed, amount: 7999}, entities: {order_ids: [ORD-100055]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100167, lines: [{line_id: ORD-100167-L1, qty: 1}]}
+    reply:
+      must_contain: [{order_id: ORD-100167}, {order_id: ORD-100055}, {amount: 7999}]
+
+- id: D135
+  tags: [multi_intent, damaged_with_photo]
+  email:
+    from: {email: jyoti.rawat@example.com, name: Jyoti Rawat}
+    subject: Earbuds faulty + air fryer status
+    received_at: "@now-0.2d"
+    body: |
+      One pair of earbuds from ORD-100090 is faulty (photo attached). Also, where is my air fryer ORD-100060?
+    attachments:
+      - {filename: earbuds.jpg, content_type: image/jpeg, size_bytes: 301999}
+  label:
+    order: ORD-100090
+    intents:
+      - intent: damaged_item
+        order_id: ORD-100090
+        mode: DRAFT
+        decision: {remedy: replacement, reason: ok, lines: [{line_id: ORD-100090-L3, qty: 1}]}
+        entities: {order_ids: [ORD-100090], photos_attached: true}
+      - {intent: order_status, order_id: ORD-100060, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100060]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100090, lines: [{line_id: ORD-100090-L3, qty: 1}]}
+    reply:
+      must_contain: [{order_id: ORD-100060}, {tracking: EK5237071180IN}]
+
+- id: D136
+  tags: [multi_intent, return_window_inside]
+  email:
+    from: {email: alisha.fernandes@example.com, name: Alisha Fernandes}
+    subject: Return jeans, and a billing question
+    received_at: "@now-0.1d"
+    body: |
+      I'd like to return the two jeans from ORD-100121. Also I think I was charged twice for this order, can you check?
+  label:
+    order: ORD-100121
+    intents:
+      - intent: return_request
+        order_id: ORD-100121
+        mode: AUTO
+        decision: {eligible: true, reason: eligible, lines: [{line_id: ORD-100121-L2, qty: 2}]}
+        entities: {order_ids: [ORD-100121]}
+      - {intent: billing_dispute, order_id: ORD-100121, mode: ROUTE, decision: {duplicate_charge: false}, entities: {order_ids: [ORD-100121]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    proposed_actions:
+      - {type: create_return, order_id: ORD-100121, lines: [{line_id: ORD-100121-L2, qty: 2}]}
+    forbidden_actions: [create_return, issue_refund]
+    notes: The return is held until the billing agent approves the case (handling.multi_intent=hold).
+
+- id: D137
+  tags: [multi_intent]
+  email:
+    from: {email: irfan.sheikh@example.com, name: Irfan Sheikh}
+    subject: Power bank questions
+    received_at: "@now-0.1d"
+    body: |
+      Where is my power bank order ORD-100043? And does it support 65W fast charging for laptops?
+  label:
+    order: ORD-100043
+    intents:
+      - {intent: order_status, order_id: ORD-100043, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100043]}}
+      - {intent: product_question, mode: ROUTE, entities: {items: [power bank]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100043}, {tracking: DT7700757076IN}]
+
+- id: D138
+  tags: [multi_intent]
+  email:
+    from: {email: suresh.krishnan@example.com, name: Suresh Krishnan}
+    subject: Cancel + complaint
+    received_at: "@now-0.1d"
+    body: |
+      Cancel ORD-100050. And honestly your website made it far too easy to pick the wrong charger, the product names are confusing.
+  label:
+    order: ORD-100050
+    intents:
+      - {intent: cancel_order, order_id: ORD-100050, mode: DRAFT, decision: {cancellable: false}, entities: {order_ids: [ORD-100050]}}
+      - {intent: complaint, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    forbidden_actions: [cancel_order]
+
+- id: D139
+  tags: [multi_intent]
+  email:
+    from: {email: manish.agarwal@example.com, name: Manish Agarwal}
+    subject: Refund and a complaint
+    received_at: "@now-0.2d"
+    body: |
+      What is the status of my refund for ORD-100013? Also the pickup person came 3 hours late and didn't call. Please give feedback to them.
+  label:
+    order: ORD-100013
+    intents:
+      - {intent: refund_status, order_id: ORD-100013, mode: AUTO, decision: {state: initiated, amount: 6999}, entities: {order_ids: [ORD-100013]}}
+      - {intent: complaint, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    reply:
+      must_contain: [{amount: 6999}]
+
+- id: D140
+  tags: [multi_intent, abuse, non_returnable]
+  email:
+    from: {email: ritika.arora@example.com, name: Ritika Arora}
+    subject: take back your garbage
+    received_at: "@now-0.1d"
+    body: |
+      Take back these dry fruits (ORD-100028) right now, you bunch of cheating scumbags. Don't give me your policy nonsense.
+  label:
+    order: ORD-100028
+    intents:
+      - {intent: return_request, order_id: ORD-100028, mode: DRAFT, decision: {eligible: false, reason: non_returnable}, entities: {order_ids: [ORD-100028]}}
+      - {intent: abuse, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: abuse}
+    forbidden_actions: [create_return, send_reply]
+
+- id: D141
+  tags: [multi_intent, multi_order]
+  email:
+    from: {email: lakshmi.subramanian@example.com, name: Lakshmi Subramanian}
+    subject: Two deliveries today?
+    received_at: "@now-0.1d"
+    body: |
+      Are both ORD-100058 and ORD-100104 arriving today? I want to plan my day.
+  label:
+    order: ORD-100058
+    intents:
+      - {intent: order_status, order_id: ORD-100058, mode: AUTO, decision: {delivery_state: out_for_delivery}, entities: {order_ids: [ORD-100058, ORD-100104]}}
+      - {intent: order_status, order_id: ORD-100104, mode: AUTO, decision: {delivery_state: out_for_delivery}, entities: {order_ids: [ORD-100058, ORD-100104]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{order_id: ORD-100058}, {order_id: ORD-100104}, {tracking: BD7849185352IN}, {tracking: EK8995167575IN}]
+
+- id: D142
+  tags: [multi_intent, damage_reported_late, return_window_inside]
+  email:
+    from: {email: olivia.brown@example.com, name: Olivia Brown}
+    subject: Wrong book + return jeans
+    received_at: "@now-0.2d"
+    body: |
+      From ORD-100034: the book is not the one I ordered, I got a cookbook instead of the mystery novel. Also I want to return the jeans.
+  label:
+    order: ORD-100034
+    intents:
+      - intent: wrong_item
+        order_id: ORD-100034
+        mode: DRAFT
+        decision: {remedy: none, reason: reported_late, lines: [{line_id: ORD-100034-L3, qty: 1}]}
+        entities: {order_ids: [ORD-100034], items: [book]}
+      - intent: return_request
+        order_id: ORD-100034
+        mode: AUTO
+        decision: {eligible: true, reason: eligible, lines: [{line_id: ORD-100034-L1, qty: 1}]}
+        entities: {order_ids: [ORD-100034], items: [jeans]}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_return, order_id: ORD-100034, lines: [{line_id: ORD-100034-L1, qty: 1}]}
+    forbidden_actions: [create_return, create_replacement]
+    notes: Wrong item reported on day 8 (window 7) -> no automatic remedy; return part is eligible but held with the draft.
+
+- id: D143
+  tags: [multi_intent, vip]
+  email:
+    from: {email: emily.carter@example.com, name: Emily Carter}
+    subject: Toothbrush delivery + cancel speaker
+    received_at: "@now-0.1d"
+    body: |
+      Is the toothbrush (ORD-100138) arriving today? And please cancel the Bluetooth speaker order ORD-100136.
+  label:
+    order: ORD-100138
+    intents:
+      - {intent: order_status, order_id: ORD-100138, mode: AUTO, decision: {delivery_state: out_for_delivery}, entities: {order_ids: [ORD-100138]}}
+      - {intent: cancel_order, order_id: ORD-100136, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100136]}}
+    escalation: [vip]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: cancel_order, order_id: ORD-100136}
+    forbidden_actions: [cancel_order]
+
+- id: D144
+  tags: [multi_intent, legal_implicit, legal_in_routine, damaged_with_photo]
+  email:
+    from: {email: kunal.saxena@example.com, name: Kunal Saxena}
+    subject: Defective cookware
+    received_at: "@now-0.1d"
+    body: |
+      The coating on the cookware set (ORD-100025) is peeling. Photo attached. Refund me or I'll take this to consumer court.
+    attachments:
+      - {filename: pan.jpg, content_type: image/jpeg, size_bytes: 390221}
+  label:
+    order: ORD-100025
+    intents:
+      - {intent: damaged_item, order_id: ORD-100025, mode: DRAFT, decision: {remedy: refund, reason: ok, refund_amount: 5499}, entities: {order_ids: [ORD-100025], photos_attached: true, remedy: refund}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [issue_refund, send_reply]
+
+- id: D145
+  tags: [multi_intent, failed_payment]
+  email:
+    from: {email: bhavna.goel@example.com, name: Bhavna Goel}
+    subject: Payment failed - will my order still ship?
+    received_at: "@now-0.1d"
+    body: |
+      My UPI payment for ORD-100041 failed. Will the order still be shipped, and when?
+  label:
+    order: ORD-100041
+    intents:
+      - {intent: payment_issue, order_id: ORD-100041, mode: ROUTE, decision: {failed_payment: true}, entities: {order_ids: [ORD-100041]}}
+      - {intent: order_status, order_id: ORD-100041, mode: AUTO, decision: {delivery_state: not_shipped}, entities: {order_ids: [ORD-100041]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: D146
+  tags: [multi_intent]
+  email:
+    from: {email: sana.mirza@example.com, name: Sana Mirza}
+    subject: Lamp tracking and refund
+    received_at: "@now-0.1d"
+    body: |
+      Hi, please share tracking for ORD-100142 (desk lamp) and confirm the refund for my cancelled order ORD-100157.
+  label:
+    order: ORD-100142
+    intents:
+      - {intent: order_status, order_id: ORD-100142, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100142]}}
+      - {intent: refund_status, order_id: ORD-100157, mode: AUTO, decision: {state: processed, amount: 9697}, entities: {order_ids: [ORD-100157]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    reply:
+      must_contain: [{tracking: EK6012786276IN}, {amount: 9697}]
+
+- id: D147
+  tags: [multi_intent, return_window_inside]
+  email:
+    from: {email: jyoti.rawat@example.com, name: Jyoti Rawat}
+    subject: Return mixer, cancel lamps
+    received_at: "@now-0.15d"
+    body: |
+      I'd like to return the mixer grinder from ORD-100090 (I got one as a gift) and cancel ORD-100101 completely.
+  label:
+    order: ORD-100090
+    intents:
+      - intent: return_request
+        order_id: ORD-100090
+        mode: AUTO
+        decision: {eligible: true, reason: eligible, lines: [{line_id: ORD-100090-L2, qty: 1}]}
+        entities: {order_ids: [ORD-100090], items: [mixer grinder]}
+      - {intent: cancel_order, order_id: ORD-100101, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100101]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: create_return, order_id: ORD-100090, lines: [{line_id: ORD-100090-L2, qty: 1}]}
+      - {type: cancel_order, order_id: ORD-100101}
+
+- id: D148
+  tags: [multi_intent]
+  email:
+    from: {email: carlos.ruiz@example.com, name: Carlos Ruiz}
+    subject: Refund + custom t-shirt sizes
+    received_at: "@now-0.2d"
+    body: |
+      Did I get my money back for the kurta order I cancelled (ORD-100056)? Also, what sizes does the custom name t-shirt come in?
+  label:
+    order: ORD-100056
+    intents:
+      - {intent: refund_status, order_id: ORD-100056, mode: AUTO, decision: {state: processed, amount: 1499}, entities: {order_ids: [ORD-100056]}}
+      - {intent: product_question, mode: ROUTE, entities: {items: [custom name t-shirt]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+    reply:
+      must_contain: [{amount: 1499}]
+
+- id: D149
+  tags: [multi_intent, damage_reported_late]
+  email:
+    from: {email: pranav.kulkarni@example.com, name: Pranav Kulkarni}
+    subject: Jacket status + old air fryer issue
+    received_at: "@now-0.1d"
+    body: |
+      Where is my jacket and earbuds order ORD-100155? Also, the air fryer from ORD-100053 has stopped heating, it's damaged.
+  label:
+    order: ORD-100155
+    intents:
+      - {intent: order_status, order_id: ORD-100155, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100155]}}
+      - {intent: damaged_item, order_id: ORD-100053, mode: DRAFT, decision: {remedy: none, reason: reported_late}, entities: {order_ids: [ORD-100053]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{tracking: DL7150654153IN}]
+
+- id: D150
+  tags: [multi_intent]
+  email:
+    from: {email: alisha.fernandes@example.com, name: Alisha Fernandes}
+    subject: Mixer today? Cancel dinner sets
+    received_at: "@now-0.1d"
+    body: |
+      Is my mixer grinder (ORD-100159) out for delivery today? And please cancel ORD-100091, the two dinner sets.
+  label:
+    order: ORD-100159
+    intents:
+      - {intent: order_status, order_id: ORD-100159, mode: AUTO, decision: {delivery_state: out_for_delivery}, entities: {order_ids: [ORD-100159]}}
+      - {intent: cancel_order, order_id: ORD-100091, mode: AUTO, decision: {cancellable: true}, entities: {order_ids: [ORD-100091]}}
+    case: {mode: AUTO, disposition: auto_replied}
+    actions:
+      - {type: cancel_order, order_id: ORD-100091}
+    reply:
+      must_contain: [{order_id: ORD-100159}, {order_id: ORD-100091}, {tracking: BD9198789626IN}]

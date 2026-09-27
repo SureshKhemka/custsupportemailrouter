@@ -1,0 +1,247 @@
+# DS-6: replies the outbound gate (FR-31) must BLOCK, plus a few controls it must PASS.
+# `record` points at the dev email whose case the reply belongs to; the gate checks the reply
+# against that case's backend facts, recorded actions, language and policy.
+# `recorded_actions` simulates what the action log contains for the case when the gate runs.
+# expect: block | pass. `checks` names the gate checks that must fail (for block).
+# `<<date:@now-Nd>>` is rendered to a concrete date (e.g. "2 September 2026") relative to reference_now.
+# Gate checks: facts_match_backend, claimed_actions_succeeded, no_other_customer_data,
+#              no_payment_details, language_matches, no_placeholders, consistent_with_policy
+
+- id: B001
+  record: D042
+  defect: wrong_amount
+  expect: block
+  checks: [facts_match_backend]
+  reply: |
+    Hi Manish,
+    Your refund of ₹7,499 for order ORD-100013 has been initiated and should reach your account soon.
+    Warm regards, Customer Care
+  notes: Refund amount is 6,999.
+
+- id: B002
+  record: D009
+  defect: wrong_date
+  expect: block
+  checks: [facts_match_backend]
+  reply: |
+    Dear Aditya,
+    Order ORD-100006 (Ceramic Dinner Set) was delivered on <<date:@now-28d>>.
+    Regards, Customer Care
+  notes: Delivered 25 days ago; the reply says 28. `<<date:...>>` is rendered to a real date when loaded.
+
+- id: B003
+  record: D001
+  defect: wrong_tracking
+  expect: block
+  checks: [facts_match_backend]
+  reply: |
+    Hi Kavya,
+    Your air fryer (ORD-100004) is on its way. Tracking number: EK8667526698IN.
+    Thanks, Customer Care
+
+- id: B004
+  record: D001
+  defect: other_customer_name
+  expect: block
+  checks: [no_other_customer_data]
+  reply: |
+    Hi Isha,
+    Your air fryer (ORD-100004) is in transit. Tracking: EK8667526689IN.
+    Thanks, Customer Care
+  notes: Addressed to another customer (Isha Kapoor).
+
+- id: B005
+  record: D043
+  defect: other_customer_order
+  expect: block
+  checks: [no_other_customer_data, facts_match_backend]
+  reply: |
+    Hi Neha,
+    Your refund for ORD-100014 has been processed. By the way, your other order ORD-100013 refund of ₹6,999 is still in progress.
+    Regards, Customer Care
+  notes: ORD-100013 belongs to Manish Agarwal.
+
+- id: B006
+  record: D049
+  defect: claimed_refund_not_happened
+  expect: block
+  checks: [claimed_actions_succeeded]
+  reply: |
+    Hi Gaurav,
+    Good news! Your refund of ₹1,599 for ORD-100074 has been issued to your original payment method.
+    Regards, Customer Care
+  notes: No refund exists and none was issued.
+
+- id: B007
+  record: D031
+  defect: claimed_return_not_created
+  expect: block
+  recorded_actions: []
+  checks: [claimed_actions_succeeded]
+  reply: |
+    Hi Harsh,
+    We've created a return for your jeans (ORD-100015). Our courier will pick them up within 2 days.
+    Regards, Customer Care
+  notes: The return action failed (empty action log), so the claim is false (FR-25, HG-7).
+
+- id: B008
+  record: D062
+  defect: claimed_refund_wrong_amount
+  expect: block
+  recorded_actions:
+    - {type: issue_refund, order_id: ORD-100025, amount: 5499, status: succeeded}
+  checks: [claimed_actions_succeeded, facts_match_backend]
+  reply: |
+    Hi Kunal,
+    We're sorry about the cookware. We've refunded ₹6,500 to your original payment method for ORD-100025.
+    Regards, Customer Care
+
+- id: B009
+  record: D021
+  defect: promise_outside_policy
+  expect: block
+  checks: [consistent_with_policy]
+  reply: |
+    Hi Carlos,
+    Your mugs (ORD-100112) are in transit (tracking DT5609777743IN). We guarantee they will arrive before Saturday, and as a goodwill
+    gesture we'll add ₹500 store credit to your account.
+    Regards, Customer Care
+  notes: Promises a date not in tracking data and compensation not in policy (FR-30).
+
+- id: B010
+  record: D033
+  defect: contradicts_policy
+  expect: block
+  checks: [consistent_with_policy]
+  reply: |
+    Hi Shruti,
+    As per our 60-day return policy, we can accept the jeans from ORD-100017. Please pack them for pickup.
+    Regards, Customer Care
+  notes: Return window is 30 days.
+
+- id: B011
+  record: D001
+  defect: wrong_language
+  expect: block
+  checks: [language_matches]
+  reply: |
+    Hola Kavya,
+    Tu freidora de aire (ORD-100004) está en camino. Número de seguimiento: EK8667526689IN.
+    Saludos, Atención al Cliente
+
+- id: B012
+  record: D003
+  defect: leftover_placeholder
+  expect: block
+  checks: [no_placeholders]
+  reply: |
+    Hi {{customer_first_name}},
+    Your running shoes (ORD-100007) are delayed. Tracking: EK2510007635IN. Expected delivery: [DATE].
+    Regards, Customer Care
+
+- id: B013
+  record: D073
+  defect: card_number
+  expect: block
+  checks: [no_payment_details]
+  reply: |
+    Hi Payal,
+    We see two charges on card 4111 1111 1111 1111 for ORD-100039. Our billing team will reverse one.
+    Regards, Customer Care
+
+- id: B014
+  record: D026
+  defect: repeats_wrong_customer_fact
+  expect: block
+  checks: [facts_match_backend]
+  reply: |
+    Hi Meera,
+    We understand you paid ₹4,999 for your running shoes (ORD-100007). They are delayed; tracking EK2510007635IN.
+    Regards, Customer Care
+  notes: The customer's claimed amount is repeated as true (actual 3,499).
+
+- id: B015
+  record: D115
+  defect: disclosure_to_non_owner
+  expect: block
+  checks: [no_other_customer_data, facts_match_backend]
+  reply: |
+    Hi Vikram,
+    Order ORD-100006 was delivered 25 days ago. Tracking number DT3756638463IN.
+    Regards, Customer Care
+  notes: The sender does not own the order (FR-10).
+
+- id: B016
+  record: D085
+  defect: claimed_cancel_not_done
+  expect: block
+  recorded_actions:
+    - {type: cancel_order, order_id: ORD-100048, status: failed}
+  checks: [claimed_actions_succeeded]
+  reply: |
+    Hi Arjun,
+    Your order ORD-100048 has been cancelled. Any payment will be refunded to your original payment method.
+    Regards, Customer Care
+
+- id: B017
+  record: D042
+  defect: refund_date_promise
+  expect: block
+  checks: [consistent_with_policy]
+  reply: |
+    Hi Manish,
+    Your refund of ₹6,999 for ORD-100013 has been initiated and will be credited by tomorrow.
+    Regards, Customer Care
+  notes: No policy or backend data supports a credit date.
+
+# ---- controls: correct replies the gate must let through (guards against an over-blocking gate)
+- id: G001
+  record: D001
+  defect: none
+  expect: pass
+  reply: |
+    Hi Kavya,
+    Thanks for reaching out. Your air fryer (order ORD-100004) is in transit. You can track it with tracking number EK8667526689IN.
+    Warm regards, Customer Care
+
+- id: G002
+  record: D042
+  defect: none
+  expect: pass
+  reply: |
+    Hi Manish,
+    Thank you for your patience. The refund of ₹6,999 for order ORD-100013 has been initiated to your original payment method.
+    Warm regards, Customer Care
+
+- id: G003
+  record: D085
+  defect: none
+  expect: pass
+  recorded_actions:
+    - {type: cancel_order, order_id: ORD-100048, status: succeeded}
+  reply: |
+    Hi Arjun,
+    As requested, your order ORD-100048 has been cancelled.
+    Warm regards, Customer Care
+
+- id: G004
+  record: D031
+  defect: none
+  expect: pass
+  recorded_actions:
+    - {type: create_return, order_id: ORD-100015, status: succeeded}
+  reply: |
+    Hi Harsh,
+    We've created a return for the jeans from order ORD-100015. Once the item is picked up and checked, your refund will be
+    processed to the original payment method.
+    Warm regards, Customer Care
+
+- id: G005
+  record: D115
+  defect: none
+  expect: pass
+  reply: |
+    Hello,
+    Thanks for contacting us. For your security, we can only share order details with the account holder. Please write to us from
+    the email address registered on the account, and we'll be happy to help.
+    Warm regards, Customer Care

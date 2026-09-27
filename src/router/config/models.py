@@ -250,6 +250,51 @@ class RoutingConfig(Strict):
         return self
 
 
+# --------------------------------------------------------------------------- handling choices
+
+# Actions that move no money and may run while the rest of the case waits for a human.
+NON_MONETARY_AUTO_INTENTS: frozenset[str] = frozenset({"return_request", "cancel_order"})
+
+
+class EscalationHandling(Strict):
+    auto_becomes: Literal["DRAFT", "ROUTE"]
+    per_intent: dict[str, Literal["DRAFT", "ROUTE"]] = Field(default_factory=dict)
+
+
+class MultiIntentHandling(Strict):
+    actions_when_case_not_auto: Literal["hold", "run"]
+    per_intent: dict[str, Literal["hold", "run"]] = Field(default_factory=dict)
+
+    @field_validator("per_intent")
+    @classmethod
+    def _non_monetary_only(cls, v: dict[str, str]) -> dict[str, str]:
+        bad = set(v) - NON_MONETARY_AUTO_INTENTS
+        if bad:
+            raise ValueError(f"only {sorted(NON_MONETARY_AUTO_INTENTS)} may be overridden, got {sorted(bad)}")
+        return v
+
+
+class InjectionHandling(Strict):
+    on_detect: Literal["escalate", "flag_only"]
+
+
+class IdentityHandling(Strict):
+    on_unverified: Literal["template_reply", "route"]
+
+
+class AmbiguousOrderHandling(Strict):
+    on_ambiguous: Literal["clarify", "route"]
+    candidate_window_days: int = Field(gt=0)
+
+
+class HandlingConfig(Strict):
+    escalation: EscalationHandling
+    multi_intent: MultiIntentHandling
+    injection: InjectionHandling
+    identity: IdentityHandling
+    ambiguous_order: AmbiguousOrderHandling
+
+
 # --------------------------------------------------------------------------- escalation / policy
 
 
@@ -382,6 +427,7 @@ class Settings(Strict):
     llm: LlmConfig
     taxonomy: TaxonomyConfig
     routing: RoutingConfig
+    handling: HandlingConfig
     escalation: EscalationConfig
     policy: PolicyConfig
     services: dict[str, ServiceConfig]
@@ -408,6 +454,7 @@ class Settings(Strict):
                 f"missing {sorted(intents - matrix)}, unknown {sorted(matrix - intents)}"
             )
         for where, keys in {
+            "handling.escalation.per_intent": set(self.handling.escalation.per_intent),
             "routing.operating_mode.per_intent": set(self.routing.operating_mode.per_intent),
             "sla.per_intent": set(self.sla.per_intent),
         }.items():

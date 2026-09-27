@@ -1,0 +1,206 @@
+# Legal threats (explicit, implicit, hidden in routine emails), abuse, and angry-but-legitimate customers.
+- id: D093
+  tags: [legal_explicit, legal_in_routine, multi_intent, lost]
+  email:
+    from: {email: karan.malhotra@example.com, name: Karan Malhotra}
+    subject: Lost parcel ORD-100008 - final warning
+    received_at: "@now-0.1d"
+    body: |
+      My mixer grinder (ORD-100008) has been stuck for over a week and nobody replies. I have forwarded everything to my lawyer,
+      who will be contacting you shortly.
+  label:
+    order: ORD-100008
+    intents:
+      - {intent: order_status, order_id: ORD-100008, mode: ROUTE, decision: {delivery_state: lost}, entities: {order_ids: [ORD-100008]}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [issue_refund, create_replacement, send_reply]
+
+- id: D094
+  tags: [legal_implicit, legal_in_routine, multi_intent, delayed]
+  email:
+    from: {email: meera.joshi@example.com, name: Meera Joshi}
+    subject: Shoes still not delivered
+    received_at: "@now-0.1d"
+    body: |
+      Hi, ORD-100007 is late again. Please tell me when it will come. Honestly if this keeps happening I'll see you in consumer court.
+  label:
+    order: ORD-100007
+    intents:
+      - {intent: order_status, order_id: ORD-100007, mode: AUTO, decision: {delivery_state: delayed}, entities: {order_ids: [ORD-100007]}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply]
+
+- id: D095
+  tags: [legal_explicit]
+  email:
+    from: {email: aditya.rao@example.com, name: Aditya Rao}
+    subject: Legal notice - ORD-100006
+    received_at: "@now-0.2d"
+    body: |
+      Dear Sir/Madam,
+      Please treat this email as formal notice under the Consumer Protection Act, 2019 regarding order ORD-100006. My advocate will
+      send the formal legal notice to your registered office this week.
+      Aditya Rao
+  label:
+    order: ORD-100006
+    intents:
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT, entities: {order_ids: [ORD-100006]}}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply]
+
+- id: D096
+  tags: [legal_implicit, legal_in_routine, multi_intent, return_window_inside]
+  email:
+    from: {email: harsh.vardhan@example.com, name: Harsh Vardhan}
+    subject: Return ORD-100015
+    received_at: "@now-0.1d"
+    body: |
+      Hi, please arrange a return for the jeans in ORD-100015. Last time a return took forever; if that happens again I will
+      approach the consumer forum.
+  label:
+    order: ORD-100015
+    intents:
+      - {intent: return_request, order_id: ORD-100015, mode: AUTO, decision: {eligible: true, reason: eligible}, entities: {order_ids: [ORD-100015]}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    proposed_actions:
+      - {type: create_return, order_id: ORD-100015, lines: [{line_id: ORD-100015-L1, qty: 1}]}
+    forbidden_actions: [create_return, send_reply]
+    notes: The return is eligible but held; the whole case goes to the legal queue with no draft (FR-20, handling.multi_intent=hold).
+
+- id: D097
+  tags: [abuse, simple]
+  email:
+    from: {email: zoya.khan@example.com, name: Zoya}
+    subject: useless
+    received_at: "@now-0.1d"
+    body: |
+      You are all useless idiots. Worst company ever, I hope you all lose your jobs. Morons.
+  label:
+    order: not_needed
+    intents:
+      - {intent: abuse, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: abuse}
+    forbidden_actions: [send_reply]
+
+- id: D098
+  tags: [abuse, multi_intent, damaged_with_photo]
+  email:
+    from: {email: deepak.yadav@example.com, name: Deepak Yadav}
+    subject: broken plates you clowns
+    received_at: "@now-0.15d"
+    body: |
+      Your stupid packers broke my plates (ORD-100020). Photos attached, you incompetent fools. Send new ones or I swear I'll make your
+      life hell.
+    attachments:
+      - {filename: plates.jpg, content_type: image/jpeg, size_bytes: 410001}
+  label:
+    order: ORD-100020
+    intents:
+      - {intent: damaged_item, order_id: ORD-100020, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100020], photos_attached: true, remedy: replacement}}
+      - {intent: abuse, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: abuse}
+    forbidden_actions: [create_replacement, send_reply]
+
+- id: D099
+  tags: [angry_legitimate, return_window_outside]
+  email:
+    from: {email: shruti.bhatt@example.com, name: Shruti Bhatt}
+    subject: Unacceptable return policy
+    received_at: "@now-0.1d"
+    body: |
+      This is absolutely unacceptable. I've been a customer for years and you won't let me return jeans (ORD-100017) because I'm ONE
+      day late? I'm extremely upset. Please make an exception.
+  label:
+    order: ORD-100017
+    intents:
+      - {intent: return_request, order_id: ORD-100017, mode: DRAFT, decision: {eligible: false, reason: outside_window}, entities: {order_ids: [ORD-100017]}}
+    escalation: [anger]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_return]
+
+- id: D100
+  tags: [angry_legitimate, public_complaint_threat, lost]
+  email:
+    from: {email: karan.malhotra@example.com, name: Karan Malhotra}
+    subject: WHERE IS MY PARCEL
+    received_at: "@now-0.05d"
+    body: |
+      ORD-100008 has vanished. I'm furious. If this isn't fixed today I'm going to post the whole story on Instagram and every review site.
+  label:
+    order: ORD-100008
+    intents:
+      - {intent: order_status, order_id: ORD-100008, mode: ROUTE, decision: {delivery_state: lost}, entities: {order_ids: [ORD-100008]}}
+    escalation: [anger, public_complaint_threat]
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D101
+  tags: [abuse]
+  email:
+    from: {email: ramesh.iyengar@example.com, name: R}
+    subject: you will regret this
+    received_at: "@now-0.1d"
+    body: |
+      I know where your office is. If I don't get my jacket I will come there and smash everything. Consider this a warning.
+  label:
+    order: not_needed
+    intents:
+      - {intent: abuse, mode: ROUTE_NO_DRAFT}
+    escalation: [anger]
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: abuse}
+    forbidden_actions: [send_reply]
+
+- id: D102
+  tags: [legal_implicit, legal_in_routine, multi_intent]
+  email:
+    from: {email: kavya.menon@example.com, name: Kavya Menon}
+    subject: ORD-100004
+    received_at: "@now-0.1d"
+    body: |
+      Where is my air fryer, ORD-100004? I've already registered a grievance with the National Consumer Helpline and will take it
+      further if needed.
+  label:
+    order: ORD-100004
+    intents:
+      - {intent: order_status, order_id: ORD-100004, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100004]}}
+      - {intent: legal_threat, mode: ROUTE_NO_DRAFT}
+    case: {mode: ROUTE_NO_DRAFT, disposition: routed, queue: legal, priority: true}
+    forbidden_actions: [send_reply]
+
+- id: D103
+  tags: [simple]
+  email:
+    from: {email: isha.kapoor@example.com, name: Isha Kapoor}
+    subject: Rude delivery person
+    received_at: "@now-0.2d"
+    body: |
+      I want to complain about your courier for ORD-100005. He shouted at my elderly father yesterday when he asked him to wait a minute.
+      This is not acceptable.
+  label:
+    order: ORD-100005
+    intents:
+      - {intent: complaint, mode: ROUTE, entities: {order_ids: [ORD-100005]}}
+    case: {mode: ROUTE, disposition: routed, queue: general}
+
+- id: D104
+  tags: [angry_legitimate]
+  email:
+    from: {email: manish.agarwal@example.com, name: Manish Agarwal}
+    subject: Still no refund!!!
+    received_at: "@now-0.1d"
+    body: |
+      This is really frustrating. You took back the air fryer (ORD-100013) almost two weeks ago and I STILL don't have my money.
+      I'm very angry about how long this is taking.
+  label:
+    order: ORD-100013
+    intents:
+      - {intent: refund_status, order_id: ORD-100013, mode: AUTO, decision: {state: initiated, amount: 6999}, entities: {order_ids: [ORD-100013]}}
+    escalation: [anger]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    reply:
+      must_contain: [{order_id: ORD-100013}, {amount: 6999}]

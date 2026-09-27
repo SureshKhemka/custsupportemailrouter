@@ -1,0 +1,299 @@
+# Damaged / wrong item: remedy computed by code from policy (PO-2, PO-3); always DRAFT (FR-18).
+- id: D057
+  tags: [simple, damaged_with_photo]
+  email:
+    from: {email: deepak.yadav@example.com, name: Deepak Yadav}
+    subject: Broken plates in dinner set ORD-100020
+    received_at: "@now-0.1d"
+    body: |
+      Hi, the dinner set from ORD-100020 arrived with three plates cracked. Photos attached.
+      Deepak
+    attachments:
+      - {filename: cracked_plates_1.jpg, content_type: image/jpeg, size_bytes: 482113}
+      - {filename: cracked_plates_2.jpg, content_type: image/jpeg, size_bytes: 455020}
+  label:
+    order: ORD-100020
+    intents:
+      - {intent: damaged_item, order_id: ORD-100020, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100020], items: [dinner set], photos_attached: true}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100020, lines: [{line_id: ORD-100020-L1, qty: 1}]}
+    forbidden_actions: [issue_refund, create_replacement]
+    reply:
+      must_contain: [{order_id: ORD-100020}]
+
+- id: D058
+  tags: [damaged_without_photo, damage_window_boundary]
+  email:
+    from: {email: farhan.qureshi@example.com, name: Farhan Qureshi}
+    subject: Damaged dinner set
+    received_at: "@now-0.1d"
+    body: |
+      Salaam, my ceramic dinner set (ORD-100021) came with a broken bowl. Please send a new one.
+  label:
+    order: ORD-100021
+    intents:
+      - {intent: damaged_item, order_id: ORD-100021, mode: DRAFT, decision: {remedy: request_photo, reason: photo_required}, entities: {order_ids: [ORD-100021], items: [dinner set], remedy: replacement}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_replacement, issue_refund]
+    notes: Day 7 is inside the window; item value above the photo threshold and no photo -> ask for a photo.
+
+- id: D059
+  tags: [damage_reported_late, damaged_with_photo]
+  email:
+    from: {email: zoya.khan@example.com, name: Zoya Khan}
+    subject: Cracked bowl
+    received_at: "@now-0.2d"
+    body: |
+      Hello, one of the bowls in my dinner set ORD-100022 is cracked. I only unpacked it today. Photo attached.
+    attachments:
+      - {filename: bowl.png, content_type: image/png, size_bytes: 1203311}
+  label:
+    order: ORD-100022
+    intents:
+      - {intent: damaged_item, order_id: ORD-100022, mode: DRAFT, decision: {remedy: none, reason: reported_late}, entities: {order_ids: [ORD-100022], photos_attached: true}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_replacement, issue_refund]
+    notes: Delivered 8 days ago; damage must be reported within 7.
+
+- id: D060
+  tags: [damaged_without_photo]
+  email:
+    from: {email: rajesh.pandey@example.com, name: Rajesh Pandey}
+    subject: Bedsheet torn
+    received_at: "@now-0.1d"
+    body: |
+      The bedsheet set I received two days ago (ORD-100023) has a big tear in the middle. Please replace.
+  label:
+    order: ORD-100023
+    intents:
+      - {intent: damaged_item, order_id: ORD-100023, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100023], items: [bedsheet set], remedy: replacement}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100023, lines: [{line_id: ORD-100023-L1, qty: 1}]}
+    notes: Item value 1,299 is below the photo threshold, so no photo is needed.
+
+- id: D061
+  tags: [damaged_with_photo]
+  email:
+    from: {email: swati.mishra@example.com, name: Swati Mishra}
+    subject: Mixer grinder jar broken
+    received_at: "@now-0.15d"
+    body: |
+      Hi, the mixer grinder from ORD-100024 arrived with the big jar cracked. See the attached picture.
+    attachments:
+      - {filename: IMG_2231.HEIC, content_type: image/heic, size_bytes: 2210331}
+  label:
+    order: ORD-100024
+    intents:
+      - {intent: damaged_item, order_id: ORD-100024, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100024], items: [mixer grinder], photos_attached: true}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100024, lines: [{line_id: ORD-100024-L1, qty: 1}]}
+
+- id: D062
+  tags: [damaged_with_photo, out_of_stock]
+  email:
+    from: {email: kunal.saxena@example.com, name: Kunal Saxena}
+    subject: Cookware set damaged ORD-100025
+    received_at: "@now-0.1d"
+    body: |
+      The non-stick pan in ORD-100025 has its coating peeling off on the first use. Photos attached. I want this sorted.
+    attachments:
+      - {filename: pan1.jpg, content_type: image/jpeg, size_bytes: 390221}
+  label:
+    order: ORD-100025
+    intents:
+      - {intent: damaged_item, order_id: ORD-100025, mode: DRAFT, decision: {remedy: refund, reason: ok, refund_amount: 5499}, entities: {order_ids: [ORD-100025], items: [non-stick pan], photos_attached: true}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: issue_refund, order_id: ORD-100025, amount: 5499}
+    reply:
+      must_contain: [{order_id: ORD-100025}, {amount: 5499}]
+    notes: Out of stock -> refund of item price (shipping fee is 0 on this order).
+
+- id: D063
+  tags: [damaged_without_photo, remedy_differs_from_request]
+  email:
+    from: {email: anjali.tiwari@example.com, name: Anjali Tiwari}
+    subject: Book arrived damaged - want refund
+    received_at: "@now-0.2d"
+    body: |
+      The book I ordered (ORD-100026) arrived with a torn cover and water damage. I just want my money back, including the delivery charge.
+  label:
+    order: ORD-100026
+    intents:
+      - {intent: damaged_item, order_id: ORD-100026, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100026], items: [book], remedy: refund}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100026, lines: [{line_id: ORD-100026-L1, qty: 1}]}
+    reply:
+      must_not_contain: [{amount: 578}, {text: "refund has been"}]
+    notes: Policy remedy is replacement when in stock; the draft must not promise the refund the customer asked for.
+
+- id: D064
+  tags: [simple]
+  email:
+    from: {email: mohit.jain@example.com, name: Mohit Jain}
+    subject: Wrong t-shirts delivered
+    received_at: "@now-0.1d"
+    body: |
+      I ordered two white cotton crew t-shirts (ORD-100027) but received two grey polo shirts. Please send the right ones.
+  label:
+    order: ORD-100027
+    intents:
+      - {intent: wrong_item, order_id: ORD-100027, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100027], items: [cotton crew t-shirts], remedy: replacement}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100027, lines: [{line_id: ORD-100027-L1, qty: 2}]}
+
+- id: D065
+  tags: [damage_reported_late, damaged_with_photo]
+  email:
+    from: {email: pranav.kulkarni@example.com, name: Pranav Kulkarni}
+    subject: Wrong model air fryer
+    received_at: "@now-0.1d"
+    body: |
+      I just noticed the air fryer from ORD-100053 is a 3L model, not the 4L I paid for. Photo of the label attached.
+    attachments:
+      - {filename: label.jpg, content_type: image/jpeg, size_bytes: 220045}
+  label:
+    order: ORD-100053
+    intents:
+      - {intent: wrong_item, order_id: ORD-100053, mode: DRAFT, decision: {remedy: none, reason: reported_late}, entities: {order_ids: [ORD-100053], items: [air fryer], photos_attached: true}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [create_replacement, issue_refund]
+
+- id: D066
+  tags: [damaged_with_photo, multi_item]
+  email:
+    from: {email: jyoti.rawat@example.com, name: Jyoti Rawat}
+    subject: One earbud not working
+    received_at: "@now-0.2d"
+    body: |
+      In order ORD-100090 I got two pairs of wireless earbuds. One pair's left earbud does not charge at all. Photo of the case attached.
+    attachments:
+      - {filename: earbuds.jpg, content_type: image/jpeg, size_bytes: 301999}
+  label:
+    order: ORD-100090
+    intents:
+      - intent: damaged_item
+        order_id: ORD-100090
+        mode: DRAFT
+        decision: {remedy: replacement, reason: ok, lines: [{line_id: ORD-100090-L3, qty: 1}]}
+        entities: {order_ids: [ORD-100090], items: [wireless earbuds], photos_attached: true}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100090, lines: [{line_id: ORD-100090-L3, qty: 1}]}
+
+- id: D067
+  tags: [damaged_without_photo, out_of_stock, multi_item]
+  email:
+    from: {email: jyoti.rawat@example.com, name: Jyoti Rawat}
+    subject: Mangoes spoiled
+    received_at: "@now-0.1d"
+    body: |
+      The Alphonso mangoes in ORD-100090 arrived rotten, most of them are black inside. Very disappointed.
+  label:
+    order: ORD-100090
+    intents:
+      - intent: damaged_item
+        order_id: ORD-100090
+        mode: DRAFT
+        decision: {remedy: refund, reason: ok, refund_amount: 1199, lines: [{line_id: ORD-100090-L1, qty: 1}]}
+        entities: {order_ids: [ORD-100090], items: [mangoes]}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: issue_refund, order_id: ORD-100090, amount: 1199}
+    reply:
+      must_contain: [{amount: 1199}]
+
+- id: D068
+  tags: [simple]
+  email:
+    from: {email: sanjay.dutta@example.com, name: Sanjay Dutta}
+    subject: Wrong name on the mug
+    received_at: "@now-0.2d"
+    body: |
+      The engraved mug (ORD-100029) says "Sanjeev" instead of "Sanjay". That's not what I entered. Please fix.
+  label:
+    order: ORD-100029
+    intents:
+      - {intent: wrong_item, order_id: ORD-100029, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100029], items: [engraved mug]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100029, lines: [{line_id: ORD-100029-L1, qty: 1}]}
+
+- id: D069
+  tags: [damaged_without_photo]
+  email:
+    from: {email: kunal.saxena@example.com, name: Kunal Saxena}
+    subject: Damaged cookware
+    received_at: "@now-0.2d"
+    body: |
+      My cookware set from ORD-100025 is damaged. Coating is coming off.
+  label:
+    order: ORD-100025
+    intents:
+      - {intent: damaged_item, order_id: ORD-100025, mode: DRAFT, decision: {remedy: request_photo, reason: photo_required}, entities: {order_ids: [ORD-100025]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    forbidden_actions: [issue_refund, create_replacement]
+
+- id: D070
+  tags: [damaged_with_photo, multi_item]
+  email:
+    from: {email: chen.wei@example.com, name: Chen Wei}
+    subject: One phone screen cracked
+    received_at: "@now-0.1d"
+    body: |
+      Hi, I ordered two phones in ORD-100033. One of them arrived with a cracked screen. Photo attached. The other is fine.
+    attachments:
+      - {filename: screen.jpg, content_type: image/jpeg, size_bytes: 512300}
+  label:
+    order: ORD-100033
+    intents:
+      - intent: damaged_item
+        order_id: ORD-100033
+        mode: DRAFT
+        decision: {remedy: replacement, reason: ok, lines: [{line_id: ORD-100033-L1, qty: 1}]}
+        entities: {order_ids: [ORD-100033], items: [phone], photos_attached: true}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100033, lines: [{line_id: ORD-100033-L1, qty: 1}]}
+    notes: Order total 49,998 is just under the 50,000 high-value threshold.
+
+- id: D071
+  tags: [damaged_with_photo, vip, high_value]
+  email:
+    from: {email: sofia.garcia@example.com, name: Sofia Garcia}
+    subject: Laptop arrived with dent
+    received_at: "@now-0.15d"
+    body: |
+      Hello, my new laptop (ORD-100031) has a dent on the lid and the hinge feels loose. Pictures attached.
+    attachments:
+      - {filename: lid.jpg, content_type: image/jpeg, size_bytes: 401222}
+      - {filename: hinge.jpg, content_type: image/jpeg, size_bytes: 398111}
+  label:
+    order: ORD-100031
+    intents:
+      - {intent: damaged_item, order_id: ORD-100031, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100031], items: [laptop], photos_attached: true}}
+    escalation: [vip, high_value]
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100031, lines: [{line_id: ORD-100031-L1, qty: 1}]}
+
+- id: D072
+  tags: [damaged_without_photo]
+  email:
+    from: {email: tom.becker@example.com, name: Tom Becker}
+    subject: Lamp broken ORD-100036
+    received_at: "@now-0.1d"
+    body: |
+      Hi, the LED desk lamp from ORD-100036 doesn't switch on, and the base is cracked.
+  label:
+    order: ORD-100036
+    intents:
+      - {intent: damaged_item, order_id: ORD-100036, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100036], items: [LED desk lamp]}}
+    case: {mode: DRAFT, disposition: drafted, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100036, lines: [{line_id: ORD-100036-L1, qty: 1}]}

@@ -1,0 +1,7 @@
+version: "1.0.0"
+# Relative dates in records ("@now-0.2d") and in seed data resolve against this instant.
+# Evals pin the mock clock and the router clock to the same value.
+reference_now: "2026-09-27T10:00:00+05:30"
+description: >
+  Labelled customer-support emails. dev/ is for building and tuning; test/ is held out
+  and must never be used for prompt examples or tuning (DS-1).

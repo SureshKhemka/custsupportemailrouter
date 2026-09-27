@@ -223,3 +223,36 @@ def test_redaction_of_secret_named_keys() -> None:
     assert _redact({"token": "abc", "nested": [{"password": "p"}], "ok": "v"}) == {
         "token": REDACTED, "nested": [{"password": REDACTED}], "ok": "v",
     }
+
+
+# --------------------------------------------------------------------------- handling choices
+
+
+def test_handling_defaults(root: Path) -> None:
+    h = load(root).settings.handling
+    assert h.escalation.auto_becomes == "DRAFT"
+    assert h.multi_intent.actions_when_case_not_auto == "hold"
+    assert h.injection.on_detect == "escalate"
+
+
+def test_handling_can_be_tuned_per_intent(root: Path) -> None:
+    cfg = load(root, overlay(root, {"handling": {
+        "escalation": {"per_intent": {"order_status": "ROUTE"}},
+        "multi_intent": {"per_intent": {"return_request": "run"}},
+    }})).settings.handling
+    assert cfg.escalation.per_intent == {"order_status": "ROUTE"}
+    assert cfg.multi_intent.per_intent == {"return_request": "run"}
+
+
+def test_escalation_can_never_become_auto(root: Path) -> None:
+    assert "handling.escalation.auto_becomes" in problems(root, {"handling": {"escalation": {"auto_becomes": "AUTO"}}})
+
+
+def test_only_non_monetary_actions_may_run_while_case_waits(root: Path) -> None:
+    msg = problems(root, {"handling": {"multi_intent": {"per_intent": {"damaged_item": "run"}}}})
+    assert "may be overridden" in msg
+
+
+def test_handling_per_intent_must_be_known_intent(root: Path) -> None:
+    msg = problems(root, {"handling": {"escalation": {"per_intent": {"nope": "DRAFT"}}}})
+    assert "handling.escalation.per_intent refers to intents not in the taxonomy" in msg

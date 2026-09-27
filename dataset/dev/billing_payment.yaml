@@ -1,0 +1,166 @@
+# Billing disputes and payment issues: always ROUTE to the billing queue, never AUTO (FR-18, FR-19).
+- id: D073
+  tags: [simple, duplicate_charge]
+  email:
+    from: {email: payal.sethi@example.com, name: Payal Sethi}
+    subject: Charged twice for hair dryer
+    received_at: "@now-0.1d"
+    body: |
+      Hi, my card statement shows two charges of ₹1,599 for the hair dryer, order ORD-100039. Please refund the extra one.
+  label:
+    order: ORD-100039
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100039, mode: ROUTE, decision: {duplicate_charge: true}, entities: {order_ids: [ORD-100039], amounts: [1599], remedy: refund}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    forbidden_actions: [issue_refund]
+
+- id: D074
+  tags: [simple, failed_payment]
+  email:
+    from: {email: yash.thakur@example.com, name: Yash Thakur}
+    subject: Payment failed but money deducted?
+    received_at: "@now-0.2d"
+    body: |
+      When I ordered the kurta (ORD-100040) the first payment failed and I paid again. Was I charged twice? Please check.
+  label:
+    order: ORD-100040
+    intents:
+      - {intent: payment_issue, order_id: ORD-100040, mode: ROUTE, decision: {failed_payment: true, duplicate_charge: false}, entities: {order_ids: [ORD-100040]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    forbidden_actions: [issue_refund]
+
+- id: D075
+  tags: [simple, failed_payment]
+  email:
+    from: {email: bhavna.goel@example.com, name: Bhavna Goel}
+    subject: UPI payment failed
+    received_at: "@now-0.05d"
+    body: |
+      I tried paying for the charger via UPI but it timed out. The order ORD-100041 still shows placed. Do I need to pay again?
+  label:
+    order: ORD-100041
+    intents:
+      - {intent: payment_issue, order_id: ORD-100041, mode: ROUTE, decision: {failed_payment: true}, entities: {order_ids: [ORD-100041]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: D076
+  tags: [duplicate_charge]
+  email:
+    from: {email: hannah.weber@example.com, name: Hannah Weber}
+    subject: Double charge ORD-100038
+    received_at: "@now-0.1d"
+    body: |
+      Hello, I have been charged twice (2 x ₹8,999) for the smartwatch order ORD-100038. Please look into it.
+  label:
+    order: ORD-100038
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100038, mode: ROUTE, decision: {duplicate_charge: true}, entities: {order_ids: [ORD-100038], amounts: [8999]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    forbidden_actions: [issue_refund]
+
+- id: D077
+  tags: [wrong_facts_quoted]
+  email:
+    from: {email: olivia.brown@example.com, name: Olivia Brown}
+    subject: Overcharged on ORD-100034
+    received_at: "@now-0.2d"
+    body: |
+      You charged me ₹3,999 for ORD-100034 but my cart total was lower. Please explain the difference.
+  label:
+    order: ORD-100034
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100034, mode: ROUTE, decision: {duplicate_charge: false}, entities: {order_ids: [ORD-100034], amounts: [3999]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    reply:
+      must_not_contain: [{amount: 3999}]
+    notes: The actual charge was 3,796; any draft must not confirm 3,999.
+
+- id: D078
+  tags: [no_order_needed]
+  email:
+    from: {email: daniel.fischer@example.com, name: Daniel Fischer}
+    subject: Card keeps getting declined
+    received_at: "@now-0.1d"
+    body: |
+      Every time I try to check out, my card is declined, although it works everywhere else. Can you help?
+  label:
+    order: not_needed
+    intents:
+      - {intent: payment_issue, mode: ROUTE}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: D079
+  tags: [vip]
+  email:
+    from: {email: emily.carter@example.com, name: Emily Carter}
+    subject: Was my payment successful?
+    received_at: "@now-0.1d"
+    body: |
+      Hi, the money has left my account for ORD-100100 but the order just says "placed". Did the payment go through?
+  label:
+    order: ORD-100100
+    intents:
+      - {intent: payment_issue, order_id: ORD-100100, mode: ROUTE, decision: {failed_payment: false}, entities: {order_ids: [ORD-100100]}}
+    escalation: [vip]
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: D080
+  tags: [chargeback_threat, duplicate_charge]
+  email:
+    from: {email: payal.sethi@example.com, name: Payal Sethi}
+    subject: Refund the double charge or I file a chargeback
+    received_at: "@now-0.05d"
+    body: |
+      This is my second attempt to get your attention. You charged me twice for ORD-100039. If the extra ₹1,599 isn't back
+      in 48 hours I am filing a chargeback with my bank.
+  label:
+    order: ORD-100039
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100039, mode: ROUTE, decision: {duplicate_charge: true}, entities: {order_ids: [ORD-100039], amounts: [1599]}}
+    escalation: [chargeback_threat]
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    forbidden_actions: [issue_refund]
+
+- id: D081
+  tags: [simple]
+  email:
+    from: {email: rekha.nambiar@example.com, name: Rekha Nambiar}
+    subject: Change COD to card payment
+    received_at: "@now-0.1d"
+    body: |
+      Can I pay for ORD-100063 by card now instead of cash on delivery? I won't be home with cash.
+  label:
+    order: ORD-100063
+    intents:
+      - {intent: payment_issue, order_id: ORD-100063, mode: ROUTE, decision: {failed_payment: false}, entities: {order_ids: [ORD-100063]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+
+- id: D082
+  tags: [wrong_facts_quoted]
+  email:
+    from: {email: lakshmi.subramanian@example.com, name: Lakshmi Subramanian}
+    subject: Short refund on ORD-100080
+    received_at: "@now-0.2d"
+    body: |
+      I returned everything in ORD-100080 but only ₹1,599 came back to my account. Where's the rest?
+  label:
+    order: ORD-100080
+    intents:
+      - {intent: billing_dispute, order_id: ORD-100080, mode: ROUTE, decision: {duplicate_charge: false}, entities: {order_ids: [ORD-100080], amounts: [1599]}}
+    case: {mode: ROUTE, disposition: routed, queue: billing}
+    notes: The refund service shows 3,397 processed; billing agent must investigate.
+
+- id: D083
+  tags: [vip]
+  email:
+    from: {email: mehul.doshi@example.com, name: Mehul Doshi}
+    subject: EMI for my order
+    received_at: "@now-0.1d"
+    body: |
+      Can I convert ORD-100089 into a 6-month no-cost EMI on my credit card?
+  label:
+    order: ORD-100089
+    intents:
+      - {intent: payment_issue, order_id: ORD-100089, mode: ROUTE, decision: {failed_payment: false}, entities: {order_ids: [ORD-100089]}}
+    escalation: [vip]
+    case: {mode: ROUTE, disposition: routed, queue: billing}

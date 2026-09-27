@@ -2,12 +2,15 @@ policy:
   currency: INR                                  # PO-6
   returns:                                       # PO-1
     window_days: 30
+    # Days are counted as calendar days in app.timezone; the last day counts
+    # (delivered 30 days ago -> still eligible, 31 -> not).
     non_returnable_categories: [perishable, personalised, hygiene]
   refunds:                                       # PO-2
     to_original_payment_method: true
+    # Shipping fee (once per order) is added when the refund reason is one of these.
     include_shipping_for: [damaged, wrong_item, never_arrived]
   damage:                                        # PO-3
-    report_window_days: 7
+    report_window_days: 7                        # counted like the return window (last day counts)
     remedy_order: [replacement, refund]          # replacement if in stock, otherwise refund
     photo_required_above_item_value: 2000
   delivery:                                      # PO-4
