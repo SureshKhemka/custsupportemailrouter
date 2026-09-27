@@ -86,6 +86,20 @@ uv run router dataset inbox --split dev     # write the emails as inbox JSON fil
   `config/handling.yaml`. The checker derives expectations from the active config, so it shows
   which labels a tuning change would affect.
 
+## Deterministic core (no LLM)
+
+| Module | Decides |
+|---|---|
+| `router/decide/policy.py` | Return eligibility, damage remedy and refund amount, delayed/lost, cancellable, refund status (PO-1..PO-5) |
+| `router/decide/identity.py` | Order-id extraction, ownership, order resolution (FR-7..FR-11) |
+| `router/decide/signals.py` | Escalation signals from LLM tone confidences plus VIP, value and repeat contact (FR-16) |
+| `router/decide/routing.py` | Case mode, disposition, queue, which actions run or wait (FR-15..FR-20) |
+| `router/decide/operating_mode.py` | shadow / draft_only / live (FR-22) |
+| `router/decide/sla.py` | SLA due time and status (FR-37) |
+| `router/core/ids.py` | Case ids and idempotency keys (FR-24) |
+| `router/core/masking.py` | Card-number detection and masking (FR-41) |
+| `router/gate/` | Outbound gate: 7 checks every reply must pass (FR-31) |
+
 ## Tests
 
 ```bash

@@ -88,6 +88,7 @@ class ReturnAuth(_Rec):
     order_id: str
     status: str
     created_at: datetime
+    pickup_scheduled_for: datetime | None = None
 
 
 class Refund(_Rec):

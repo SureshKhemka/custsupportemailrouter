@@ -22,7 +22,7 @@ from router.dataset.loader import LoadedRecord, load_gate_cases, load_rated_repl
 from router.dataset.schema import ExpectedIntent
 from router.decide import policy as P
 from router.decide.routing import AUTO_ACTIONS, ORDER_BOUND, CaseInput, IntentInput, decide_case
-from router.schemas.backend import Charge, Customer, Order, Product, Refund
+from router.schemas.backend import Charge, Customer, Order, Product, Refund, ReturnAuth
 
 # DS-3 coverage: every tag must appear on at least one record.
 REQUIRED_TAGS = {
@@ -52,22 +52,26 @@ class SeedView:
     products: dict[str, Product]
     refunds: dict[str, list[Refund]]
     charges: dict[str, list[Charge]]
+    returns: dict[str, list[ReturnAuth]] = field(default_factory=dict)
 
     @classmethod
     def load(cls, seed_dir: Path, now: datetime) -> SeedView:
         data, _ = load_seed_files(seed_dir, ("customers.json", "orders.json", "catalog.json", "refunds.json",
-                                             "payments.json"), now)
+                                             "payments.json", "returns.json"), now)
         refunds: dict[str, list[Refund]] = defaultdict(list)
         for r in data["refunds"]["refunds"]:
             refunds[r["order_id"]].append(Refund.model_validate(r))
         charges: dict[str, list[Charge]] = defaultdict(list)
         for c in data["payments"]["charges"]:
             charges[c["order_id"]].append(Charge.model_validate(c))
+        returns: dict[str, list[ReturnAuth]] = defaultdict(list)
+        for r in data["returns"]["returns"]:
+            returns[r["order_id"]].append(ReturnAuth.model_validate(r))
         return cls(
             customers=[Customer.model_validate(c) for c in data["customers"]["customers"]],
             orders={o["order_id"]: Order.model_validate(o) for o in data["orders"]["orders"]},
             products={p["sku"]: Product.model_validate(p) for p in data["catalog"]["products"]},
-            refunds=refunds, charges=charges,
+            refunds=refunds, charges=charges, returns=returns,
         )
 
     def customer_by_email(self, email: str) -> Customer | None:
