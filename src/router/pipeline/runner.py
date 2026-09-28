@@ -7,6 +7,7 @@ Every step and backend call is written to the append-only audit log (FR-39).
 from __future__ import annotations
 
 import json
+import time
 import traceback
 import uuid
 from collections import Counter
@@ -112,8 +113,14 @@ class Router:
         # Step ids keep counting across every email of the case, so they stay unique (FR-40).
         ctx = CaseContext(ir.case_id, email, now, ir, source, step_seq=self.store.count_events(ir.case_id))
         self._current = ctx
+        started = time.perf_counter()
         try:
-            return self._process(ctx)
+            done = self._process(ctx)
+            # BM-8: wall-clock processing time per email (business time is in every event's `at`)
+            self.store.append_event(ctx.case_id, ctx.next_step("done"), "processed",
+                                    {"stage": done.stage, "duration_ms": round((time.perf_counter() - started) * 1000, 1)},
+                                    now)
+            return done
         except Exception as exc:
             # A backend outage or a bug must never drop an email silently (NF-4, EV-11): the case goes
             # to a human with the error recorded, and nothing is sent.

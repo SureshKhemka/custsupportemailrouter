@@ -12,6 +12,7 @@ from __future__ import annotations
 import os
 import re
 from collections import Counter, defaultdict
+from datetime import timedelta
 from pathlib import Path
 from typing import Any
 
@@ -25,7 +26,11 @@ from router.dataset.check import SeedView
 from router.dataset.gate_facts import facts_for_record
 from router.dataset.loader import LoadedRecord, load_records, reference_now
 from router.dataset.schema import RecordedAction
+from router.core.ids import normalize_message_id
+from router.evals.agent_sim import act_on_cases
 from router.evals.oracle import label_oracle
+from router.metrics.business import business_metrics, collect, render_markdown
+from router.review.service import ReviewService
 from router.evals.report import run_header, write_report
 from router.gate import run_gate
 from router.llm import LLMClient
@@ -44,13 +49,15 @@ NEVER_DRAFT = {"legal_threat", "abuse"}
 
 
 def run_e2e_eval(loaded: LoadedConfig, split: str, understanding: str = "oracle", *,
-                 recording: str | None = None, ids: list[str] | None = None, progress=None) -> Path:
+                 recording: str | None = None, ids: list[str] | None = None, progress=None,
+                 simulate_agent: bool = True, kind: str = "e2e") -> Path:
+    """kind="shadow": business metrics of a shadow run (nothing sent, no actions); labels are not targets."""
     cfg = loaded.settings
     now = reference_now(cfg.paths.dataset)
-    records = load_records(cfg.paths.dataset, (split,))
+    dataset = load_records(cfg.paths.dataset, (split,))
     seed = SeedView.load(cfg.paths.seed, now)
     if understanding == "oracle":
-        understander = label_oracle(records)
+        understander = label_oracle(dataset)
     else:
         llm = LLMClient(loaded, recording_mode="replay" if understanding == "replay" else "record",
                         recording_name=recording or ("eval" if split == "dev" else "eval-test"))
@@ -58,14 +65,15 @@ def run_e2e_eval(loaded: LoadedConfig, split: str, understanding: str = "oracle"
 
     clients = {name: TestClient(build_app(name, loaded, persist=False)) for name in SPECS}
     groups: dict[str, list[LoadedRecord]] = defaultdict(list)
-    for lr in sorted(records, key=lambda r: (r.email.received_at, r.record.id)):
-        if not ids or lr.record.group_id in {r.record.group_id for r in records if r.record.id in ids}:
+    for lr in sorted(dataset, key=lambda r: (r.email.received_at, r.record.id)):
+        if not ids or lr.record.group_id in {r.record.group_id for r in dataset if r.record.id in ids}:
             groups[lr.record.group_id].append(lr)
 
     rows: list[dict[str, Any]] = []
     # BROKEN-REPLY: a sent reply with template/code artifacts (not a spec hard gate, but never acceptable)
     hard: dict[str, list[str]] = {f"HG-{i}": [] for i in (1, 2, 3, 4, 6, 7, 8, 9)} | {"EV-11": [], "BROKEN-REPLY": []}
     faults = Counter()
+    case_records: list = []  # every case the run produced, for business metrics
     secrets = [v for p in cfg.llm.providers.values() if p.api_key_env and (v := os.environ.get(p.api_key_env))]
     done = 0
     for group in groups.values():
@@ -98,23 +106,46 @@ def run_e2e_eval(loaded: LoadedConfig, split: str, understanding: str = "oracle"
         if created:
             hard["HG-4"].append(f"group {group[0].record.group_id}: replay created {[(c['path']) for c in created]}")
         _hard_gates(group, rows[-len(group):], clients, store, seed, loaded, hard, secrets)
+        # After the hard gates (which judge what the system did on its own), a simulated agent works
+        # the human queues, so draft acceptance, overrides and SLA can be measured (BM-2, BM-3, BM-5).
+        if simulate_agent and kind == "e2e":
+            svc = ReviewService(store, router.backends, cfg)
+            act_on_cases(svc, store, {normalize_message_id(lr.email.message_id): lr for lr in group}, now)
+        for rec in collect(store):
+            rec.group = group[0].record.group_id
+            first = next((lr for lr in group if normalize_message_id(lr.email.message_id) in
+                          {e.message_id for e in rec.emails}), None)
+            if first is not None:
+                allowed = {(a.type, a.order_id) for a in [*first.record.label.actions, *first.record.label.proposed_actions]}
+                ran = {(a["type"], a["order_id"]) for a in rec.actions if a["status"] == "succeeded"}
+                rec.wrong_actions = len(ran - allowed)
+            case_records.append(rec)
         done += len(group)
         if progress:
-            progress(done, len(records))
+            progress(done, len(dataset))
 
     metrics, failures, md = _metrics(rows, hard)
     metrics["headline"]["faults_injected"] = faults["injected"]
     metrics["headline"]["cases_with_failed_actions_or_send"] = faults["cases_failed"]
-    header = run_header(loaded, "e2e", f"{split}-{understanding}" + ("-faults" if cfg.faults.enabled else "")
+    horizon = max(lr.email.received_at for lr in dataset) + timedelta(days=1) if dataset else now
+    bm = business_metrics(case_records, cfg, horizon)
+    metrics["business"] = bm
+    metrics["headline"]["automation_rate_excl_spam"] = bm["BM-1_automation"]["overall_rate_excl_spam"]
+    metrics["headline"]["would_automate_in_shadow"] = bm["BM-1_automation"]["would_automate_in_shadow"]
+    metrics["headline"]["wrong_actions_incl_human_approved"] = bm["BM-7_wrong_actions"] or 0
+    md = render_markdown(bm, simulated_agent=simulate_agent and kind == "e2e") + "\n" + md
+    header = run_header(loaded, kind, f"{split}-{understanding}" + ("-faults" if cfg.faults.enabled else "")
                         + ("-subset" if ids else ""), understanding)
     t = cfg.evals.targets
     # Under fault injection, dispositions are expected to shift to humans; EV-11 only requires the hard
     # gates to hold and failed cases to reach a human (checked as "EV-11" above).
-    targets = {} if cfg.faults.enabled else {
+    targets = {} if cfg.faults.enabled or kind == "shadow" else {
         "disposition_accuracy": {"op": ">=", "target": t.disposition_accuracy,
                                  "met": metrics["headline"]["disposition_accuracy"] >= t.disposition_accuracy}}
     targets |= {"hard_gate_failures": {"op": "==", "target": 0, "met": metrics["headline"]["hard_gate_failures"] == 0},
-               "wrong_actions": {"op": "==", "target": 0, "met": metrics["headline"]["wrong_actions"] == 0}}
+                "wrong_actions": {"op": "==", "target": 0, "met": metrics["headline"]["wrong_actions"] == 0},
+                "wrong_actions_incl_human_approved": {  # BM-7 must be zero
+                    "op": "==", "target": 0, "met": metrics["headline"]["wrong_actions_incl_human_approved"] == 0}}
     return write_report(cfg.paths.reports, header, metrics["headline"], targets,
                         {k: v for k, v in metrics.items() if k != "headline"}, failures, md)
 

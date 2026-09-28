@@ -55,14 +55,17 @@ def _tokens(s: str) -> set[str]:
     return {w.rstrip("s") for w in _WORD.findall(s.lower()) if w not in _STOP and len(w) > 2}
 
 
-def select_lines(order, hints: list[str]) -> list[P.LineRequest]:
-    """Order lines the customer named (remaining quantity), or every line when none match (FR-14)."""
+def select_lines(order, hints: list[str], *, strict: bool = False) -> list[P.LineRequest]:
+    """Order lines the customer named (remaining quantity), or every line when none match (FR-14).
+    strict=True returns [] instead of every line when a multi-item order has no identifiable line."""
     matched = []
     for line in order.items:
         lt = _tokens(line.name) | _tokens(line.category)
         if any(_tokens(h) and (_tokens(h) & lt) for h in hints):
             left = line.qty - line.returned_qty
             matched.append(P.LineRequest(line.line_id, left if left > 0 else line.qty))
+    if not matched and strict and len(order.items) > 1:
+        return []
     return matched or P.whole_lines(order) or [P.LineRequest(l.line_id, l.qty) for l in order.items]
 
 
@@ -140,7 +143,10 @@ def _decide_one(d: IntentDecision, f: OrderFacts, hints: list[str], email: Inbou
         else:
             d.conditions.add("not_eligible")
     elif d.intent in {"damaged_item", "wrong_item"}:
-        lines = select_lines(order, hints)
+        lines = select_lines(order, hints, strict=True)
+        if not lines:  # several items and none identified: never guess which to refund or replace
+            d.decision = {"remedy": "none", "reason": "items_unclear", "photos_attached": email.has_photos}
+            return
         stock = {}
         for l in lines:
             sku = order.line(l.line_id).sku

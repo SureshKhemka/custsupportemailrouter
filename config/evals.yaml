@@ -14,3 +14,7 @@ evals:
     reply_judge_avg: 4.0
     reply_min_score_for_auto: 3
     disposition_accuracy: 0.90
+  # Simulated agent used in evals (clearly reported as simulated): acts this many minutes after
+  # each email arrives. Used for draft acceptance (BM-2), overrides (BM-3) and SLA (BM-5).
+  simulated_agent:
+    minutes_after_arrival: 60

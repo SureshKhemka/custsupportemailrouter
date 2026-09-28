@@ -1,0 +1,5 @@
+# Shadow run (FR-22, BM-1): process everything, send nothing, run no action; measure what would have
+# been automated. Use with e2e.yaml.
+routing:
+  operating_mode:
+    default: shadow

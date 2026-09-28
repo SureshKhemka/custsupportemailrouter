@@ -16,6 +16,8 @@
     intents:
       - {intent: damaged_item, order_id: ORD-100020, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100020], photos_attached: true, remedy: replacement}}
     case: {mode: ROUTE, disposition: routed, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100020, lines: [{line_id: ORD-100020-L1, qty: 1}]}
 
 - id: T068
   tags: [unsupported_language]

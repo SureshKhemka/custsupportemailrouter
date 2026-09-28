@@ -158,6 +158,25 @@ agent summaries, judge agreement with `dataset/human_ratings/`):
 uv run router eval replies -c config/eval/e2e.yaml --concurrency 4
 ```
 
+Everything at once (deterministic from recorded LLM outputs by default; exits non-zero on any
+hard-gate or target failure):
+
+```bash
+uv run router eval all                         # dev split, ~90 s, no model calls
+uv run router eval all --live --consistency    # call the models (records outputs) + EV-12 consistency
+uv run router eval shadow -c config/eval/e2e.yaml   # what would be automated; nothing sent
+uv run router eval consistency --limit 20      # EV-12 only (live calls)
+```
+
+Business metrics (automation, draft acceptance, overrides, recontact, SLA, gate blocks, wrong
+actions, cost and latency) for any real run:
+
+```bash
+uv run router metrics            # after `router process` and `router review ...`
+```
+
+In evals, human steps are done by a **simulated agent** driven by the labels; reports say so.
+
 Reports (JSON + Markdown) go to `var/reports/<kind>/<timestamp>-<split>/`. Each report includes
 the effective config, the model and prompt version per step, the dataset version, metrics against
 the targets in `config/evals.yaml`, every failing example, and a comparison with the previous run.

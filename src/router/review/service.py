@@ -135,8 +135,24 @@ class ReviewService:
         if not final or not final.strip():
             raise ReviewError("this case has no draft: write the reply (edit) before approving")
 
-        # 1. held / proposed / previously failed actions, under their original idempotency keys
         pending = [a for a in self.store.case_actions(case_id) if a["status"] in {"proposed", "failed", "shadow"}]
+        edit_size, edit_class = self._edit(draft["text"] if draft else None, final)
+
+        # 0. pre-check: gate the reply as if the pending actions succeeded. If it would be blocked,
+        #    do nothing at all: an action must never run for a reply that cannot be sent.
+        pre = self.facts(case, final, now)
+        if run_actions:
+            pre.actions = [*pre.actions, *(ActionRecord(a["type"], a["order_id"], "succeeded",
+                                                        (a["request"] or {}).get("amount")) for a in pending)]
+        pre_gate = run_gate(final, pre)
+        if not pre_gate.passed:
+            self.store.add_agent_action(case_id=case_id, agent=agent, action="approve_blocked_by_gate", at=now,
+                                        draft_seq=draft["seq"] if draft else None, edit_size=edit_size,
+                                        edit_class=edit_class, detail={"gate": pre_gate.failures, "actions": []})
+            return ApproveResult(False, gate=pre_gate, edit_class=edit_class, edit_size=edit_size,
+                                 problem="blocked by the outbound gate; edit the reply (nothing was done)")
+
+        # 1. held / proposed / previously failed actions, under their original idempotency keys
         ran = []
         if run_actions:
             for a in pending:
@@ -156,10 +172,9 @@ class ReviewService:
                                             at=now, draft_seq=draft["seq"] if draft else None, detail={"actions": ran})
                 return ApproveResult(False, actions=ran, problem="an action failed; nothing was sent")
 
-        # 2. gate with fresh facts (FR-31); no override
+        # 2. gate again with the real results and fresh facts (FR-31); no override
         facts = self.facts(case, final, now)
         gate = run_gate(final, facts)
-        edit_size, edit_class = self._edit(draft["text"] if draft else None, final)
         if not gate.passed:
             self.store.add_agent_action(case_id=case_id, agent=agent, action="approve_blocked_by_gate", at=now,
                                         draft_seq=draft["seq"] if draft else None, edit_size=edit_size,

@@ -136,3 +136,14 @@ def test_view_has_everything_the_agent_needs(env) -> None:
     assert v.understanding["intents"] == ["order_status", "billing_dispute"]
     assert v.decision["intents"] and v.facts.orders[0].order_id == "ORD-100038"
     assert v.draft is not None and v.case["queue"] == "billing"
+
+
+def test_blocked_reply_runs_no_action(env) -> None:
+    """An action must never run for a reply the gate would block (found by the M10 simulated agent)."""
+    svc, case, mocks, store = env
+    cid = case("D062")  # refund proposed
+    res = svc.approve(cid, "asha", NOW, text="Hola Kunal, le devolveremos ₹5,499.\n")
+    assert not res.sent and "language_matches" in res.gate.failures
+    assert [a["status"] for a in store.case_actions(cid)] == ["proposed"]
+    assert mocks["refund"].get("/_admin/state").json()["refunds"] == {} or all(
+        r["order_id"] != "ORD-100025" for r in mocks["refund"].get("/_admin/state").json()["refunds"].values())

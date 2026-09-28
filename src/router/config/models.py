@@ -450,10 +450,15 @@ class EvalTargets(Strict):
     disposition_accuracy: float = Field(ge=0, le=1)
 
 
+class SimulatedAgentConfig(Strict):
+    minutes_after_arrival: int = Field(ge=0)
+
+
 class EvalsConfig(Strict):
     judge: JudgeConfig
     consistency_runs: int = Field(ge=1)
     targets: EvalTargets
+    simulated_agent: SimulatedAgentConfig
 
 
 # --------------------------------------------------------------------------- root

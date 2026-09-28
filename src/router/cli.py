@@ -301,5 +301,83 @@ def eval_replies(
     typer.echo(f"Report: {out / 'report.md'}")
 
 
+@eval_app.command("all")
+def eval_all(
+    config: OverlayOpt = None,
+    split: Annotated[str, typer.Option(help="dev (default) or test.")] = "dev",
+    live: Annotated[bool, typer.Option("--live", help="Call the models (and record) instead of replaying.")] = False,
+    no_replies: Annotated[bool, typer.Option("--no-replies", help="Skip the reply/judge eval.")] = False,
+    consistency: Annotated[bool, typer.Option("--consistency", help="With --live: add the EV-12 run.")] = False,
+) -> None:
+    """Every eval, one combined report. Deterministic by default (recorded LLM outputs)."""
+    import time
+
+    from router.evals.all import run_all
+
+    loaded = _load(config)
+    started = time.monotonic()
+    out = run_all(loaded, split, live=live, replies=not no_replies, consistency=consistency,
+                  say=lambda m: err.print(f"[{time.monotonic() - started:.0f}s] {m}"))
+    report = json.loads((out / "report.json").read_text())
+    for s in report["steps"]:
+        bad = [k for k, v in s["targets"].items() if not v.get("met", True)] + \
+              [k for k, v in s["hard_gates"].items() if not v.get("passed", True)]
+        err.print(f"{'[red]FAIL[/]' if bad else '[green]PASS[/]'} {s['step']}" + (f": {bad}" if bad else "")
+                  + (f" ({s['note']})" if s["note"] else ""))
+    typer.echo(f"Report: {out / 'report.md'}")
+    if not report["passed"]:
+        raise typer.Exit(code=1)
+
+
+@eval_app.command("shadow")
+def eval_shadow(config: OverlayOpt = None, split: Annotated[str, typer.Option()] = "dev",
+                understanding: Annotated[str, typer.Option(help="oracle or replay")] = "replay") -> None:
+    """Shadow run (FR-22, BM-1): what would have been automated; nothing is sent, no action runs."""
+    from router.evals.e2e import run_e2e_eval
+
+    loaded = _load([*(config or []), Path("config/eval/shadow.yaml")])
+    out = run_e2e_eval(loaded, split, understanding, kind="shadow", simulate_agent=False)
+    report = json.loads((out / "report.json").read_text())
+    bm = report["business"]["BM-1_automation"]
+    err.print(f"would automate (excl. spam): {bm['would_automate_in_shadow']}; actually sent: "
+              f"{bm['overall_rate_excl_spam']} (must be 0 in shadow)")
+    typer.echo(f"Report: {out / 'report.md'}")
+
+
+@eval_app.command("consistency")
+def eval_consistency(config: OverlayOpt = None, split: Annotated[str, typer.Option()] = "dev",
+                     runs: Annotated[int | None, typer.Option(help="Runs per email (default evals.consistency_runs).")] = None,
+                     limit: Annotated[int, typer.Option(help="How many emails (spread across the split).")] = 20,
+                     ids: Annotated[str | None, typer.Option()] = None,
+                     concurrency: Annotated[int | None, typer.Option()] = None) -> None:
+    """EV-12: same emails understood several times with live calls; how often outputs change."""
+    from router.evals.consistency import run_consistency_eval
+
+    loaded = _load(config)
+    out = run_consistency_eval(loaded, split, runs=runs, limit=limit, ids=ids.split(",") if ids else None,
+                               concurrency=concurrency)
+    report = json.loads((out / "report.json").read_text())
+    for k, v in report["headline"].items():
+        err.print(f"{k}: {v}")
+    typer.echo(f"Report: {out / 'report.md'}")
+
+
+@app.command("metrics")
+def metrics_cmd(config: OverlayOpt = None, now: NowOpt = None,
+                as_json: Annotated[bool, typer.Option("--json")] = False) -> None:
+    """Business metrics BM-1..BM-8 from the case store of real runs (`router process` + review)."""
+    from datetime import datetime
+
+    from router.core.clock import make_clock
+    from router.metrics.business import business_metrics, collect, render_markdown
+    from router.store.db import Store
+
+    loaded = _load(config)
+    s = loaded.settings
+    t = datetime.fromisoformat(now) if now else make_clock(s.clock.fixed_now).now()
+    bm = business_metrics(collect(Store(s.paths.db_dir / "router.db")), s, t)
+    typer.echo(json.dumps(bm, indent=2) if as_json else render_markdown(bm))
+
+
 if __name__ == "__main__":
     app()

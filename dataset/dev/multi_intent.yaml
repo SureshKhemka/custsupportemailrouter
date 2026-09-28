@@ -95,7 +95,7 @@
         order_id: ORD-100090
         mode: DRAFT
         decision: {remedy: replacement, reason: ok, lines: [{line_id: ORD-100090-L3, qty: 1}]}
-        entities: {order_ids: [ORD-100090], photos_attached: true}
+        entities: {order_ids: [ORD-100090], items: [earbuds], photos_attached: true}
       - {intent: order_status, order_id: ORD-100060, mode: AUTO, decision: {delivery_state: in_transit}, entities: {order_ids: [ORD-100060]}}
     case: {mode: DRAFT, disposition: drafted, queue: general}
     proposed_actions:

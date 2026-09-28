@@ -48,6 +48,8 @@
     intents:
       - {intent: damaged_item, order_id: ORD-100023, mode: DRAFT, decision: {remedy: replacement, reason: ok}, entities: {order_ids: [ORD-100023], items: [bedsheet set], remedy: replacement}}
     case: {mode: ROUTE, disposition: routed, queue: general}
+    proposed_actions:
+      - {type: create_replacement, order_id: ORD-100023, lines: [{line_id: ORD-100023-L1, qty: 1}]}
 
 - id: D154
   tags: [unsupported_language, secondary_email, vip, high_value, multi_intent]

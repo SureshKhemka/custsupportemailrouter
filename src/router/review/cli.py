@@ -16,6 +16,7 @@ from rich.markup import escape
 from rich.panel import Panel
 from rich.table import Table
 
+from router.clients import ServiceError
 from router.review.service import CaseView, ReviewError, ReviewService
 
 app = typer.Typer(no_args_is_help=True, help="Review cases that need a human: queues, show, approve, reject, reassign.")
@@ -41,6 +42,7 @@ def _service(config: list[Path] | None, now: str | None) -> tuple[ReviewService,
 
 
 def _fail(exc: Exception) -> None:
+    """Review errors and backend outages end the command with a clear message."""
     err.print(f"[red]{exc}[/]")
     raise typer.Exit(code=1)
 
@@ -74,7 +76,7 @@ def show(case_id: str, config: ConfigOpt = None, now: NowOpt = None) -> None:
     svc, t = _service(config, now)
     try:
         v = svc.view(case_id, t)
-    except ReviewError as exc:
+    except (ReviewError, ServiceError) as exc:
         _fail(exc)
     _render(v)
 
@@ -143,7 +145,7 @@ def approve(
         if edit:
             text = _edit(text or (v.draft["text"] if v.draft else ""))
         res = svc.approve(case_id, agent, t, text=text, run_actions=not no_actions)
-    except ReviewError as exc:
+    except (ReviewError, ServiceError) as exc:
         _fail(exc)
     for a in res.actions:
         out.print(f"action {a['type']}: {a['status']} {a.get('error', '')}")
@@ -178,7 +180,7 @@ def reject(case_id: str, reason: Annotated[str, typer.Option(help="Why (recorded
     svc, t = _service(config, now)
     try:
         svc.reject(case_id, agent, reason, t, close=close, decision_changed=override)
-    except ReviewError as exc:
+    except (ReviewError, ServiceError) as exc:
         _fail(exc)
     out.print("[yellow]Rejected[/]" + (" and closed" if close else "; the case stays open"))
 
@@ -190,6 +192,6 @@ def reassign(case_id: str, queue: str, agent: AgentOpt = os.environ.get("USER", 
     svc, t = _service(config, now)
     try:
         svc.reassign(case_id, agent, queue, t, reason)
-    except ReviewError as exc:
+    except (ReviewError, ServiceError) as exc:
         _fail(exc)
     out.print(f"Moved {case_id} to {queue}")
